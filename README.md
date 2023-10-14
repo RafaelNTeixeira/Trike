@@ -1,6 +1,6 @@
 # Trike
 
-**Group:** Trike_1:
+**Group:** Trike_1
 
 - João Pedro Moreira Costa (up201700488@.up.pt)
 - Rafael Neves Teixeira (up202108831@up.pt)
