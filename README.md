@@ -2,8 +2,8 @@
 
 **Group:** Trike_1:
 
-João Pedro Moreira Costa (up201700488@.up.pt)
-Rafael Neves Teixeira (up202108831@up.pt)
+- João Pedro Moreira Costa (up201700488@.up.pt)
+- Rafael Neves Teixeira (up202108831@up.pt)
 
 ## Installation and Execution
 To play the game it is required to have installed at least the 4.8.0 version of SICStus Prolog and the folder `src` that contains the code for the game functioning.
@@ -32,8 +32,9 @@ If using Windows, we can click on the options `File` -> `Consult` -> select the 
 - `Scoring:` At the game's conclusion, each player scores one point for every checker of their own colour that is adjacent to or underneath the pawn.
 - `Pie Rule:` Before the game begins, the first player selects a colour and places a checker on any point of the board, with the pawn on top. At this point, the second player has a one-time opportunity to switch sides rather than make a regular move.
 
-**Game Website and Rules:** (https://boardgamegeek.com/boardgame/307379/trike)
-**Online Gameplay:** (https://pt.boardgamearena.com/gamepanel?game=trike)
+> **Game Website and Rules:** (https://boardgamegeek.com/boardgame/307379/trike)
+
+> **Online Gameplay:** (https://pt.boardgamearena.com/gamepanel?game=trike)
 
 
 
