@@ -95,10 +95,10 @@ jump_over_checkers(Board, X, Y, NewX, NewY) :-
     jump_over_checkers(Board, X1, Y1, NewX, NewY).
 
 pie_rule([Player|Board], NewBoard) :-
-    display_game([Player|Board]),
-    write('Player '), write(Player), write(', choose an Y starting point:'),
+    display_board(Board),
+    write('Player '), write(Player), write(', choose an X starting point:'),
     read(PointY),
-    write('Player '), write(Player), write(', now choose an X starting point: '),
+    write('Player '), write(Player), write(', now choose an Y starting point: '),
     read(PointX),
     (is_empty(Board, PointX, PointY) ->
         update_board(Board, Player, PointX, PointY, NewBoard);
