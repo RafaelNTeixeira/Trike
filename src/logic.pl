@@ -1,28 +1,29 @@
 % play_game will receive Level variable
-play_game(Level):- 
+play_game :- 
     initial_state(8, GameState),
-    display_game(GameState).
-    gameplayfirstround(GameState, level).
+    initial_player(Player),
+    write('\nPlayer 1 starts with the black pieces\n'), nl,
+    write('\ninitial_player\n'),
+    pie_rule(GameState, NewBoard),
+    write('pie_rule\n'),
+    switch_player(Player, Opponent),
+    write('switch_player\n'),
+    gameplay(NewBoard, Opponent, Player, FinalScore), % play_game
+    write('gameplay\n'),
+    report_winner(FinalScore).
 
-gameplay(GameState, _Level) :-
-    % end condition
-    % winner condition
+initial_player(black).
 
-gameplay(GameState, Level) :-
-    % get the player that is going to play now
-    % get available moves
-    % move pieces
-    display_game(NewGameState),
-    gameplay(NewGameState, Level).
-
+/*
 checkificanplay(GameState, Row, Column) :- 
     Row1 is Row - 48, % 0 is 48.
     Column1 is Column - 97, % a is 97.
     get_element_at_index(GameState, Row, RowList),
     get_element_at_index(RowList, Column, Elem),
     is_zero(Elem).
+*/
 
-
+/*
 chooseposition(GameState, Row, Column) :-
     repeat,
     write("Choose the starting position."),
@@ -31,15 +32,23 @@ chooseposition(GameState, Row, Column) :-
     write("Choose Column (The column between a - o): "),
     read(Column),
     checkificanplay(GameState, Row, Column).
+*/
+
+switch_player(black, white).
+switch_player(white, black).
 
 update_board(Board, Player, PointX, PointY, NewBoard) :-
-    switch_player(Player, Opponent),
-    replace(Board, PointX, PointY, Player, TempBoard),
-    move_pawn(TempBoard, PointX, PointY, NewBoard, Opponent).
-    
-gameplayfirstround(GameState, Level) :-
-    chooseposition(GameState),
-    update_board()
+    write('Im in\n'),
+    % replace(Board, PointX, PointY, Player, TempBoard),
+    write('replace\n'),
+    % move_pawn(TempBoard, PointX, PointY, NewBoard, Opponent),
+    write('move_pawn\n'),
+    write('Player 2, do you want to switch colors?\n'),
+    write('1. Yes'), nl, write('2. No'), nl,
+    read(Choice),
+    (Choice =:= 1 -> Player = white; Choice =:= 2 -> Player = black; Player = black).
+    % switch_player(Player, Opponent),
+    write('Switched players').
 
 /*  
     Pie Rule:
@@ -47,12 +56,128 @@ gameplayfirstround(GameState, Level) :-
     - The second player as the chance to change color with the first player. 
 */
 
-apply_pie_rule(Board, Player, NewBoard) :-
-    display_board(Board),
-    write('Player '), write(Player), write(', choose a starting point (X Y): '),
-    read(PointX), read(PointY),
+% Replace a cell in the board with a new value.
+replace([Row | Rest], 0, Y, NewValue, [NewRow | Rest]) :-
+    replace_in_row(Row, 0, Y, NewValue, NewRow).
+replace([Row | Rest], X, Y, NewValue, [Row | NewRest]) :-
+    X > 0,
+    X1 is X - 1,
+    replace(Rest, X1, Y, NewValue, NewRest).
+
+replace_in_row([_ | Rest], 0, Y, NewValue, [NewValue | Rest]) :-
+    Y = 0.
+replace_in_row([Value | Rest], X, Y, NewValue, [Value | NewRest]) :-
+    Y > 0,
+    Y1 is Y - 1,
+    replace_in_row(Rest, X, Y1, NewValue, NewRest).
+
+move_pawn(Board, PointX, PointY, NewBoard, Opponent) :-
+    replace(Board, PointX, PointY, neutral, TempBoard),
+    write('Move the pawn to (X Y): '),
+    read(NewX), read(NewY),
+    (can_move_pawn(TempBoard, PointX, PointY, NewX, NewY) ->
+        replace(TempBoard, NewX, NewY, neutral, NewBoard);
+        write('Invalid pawn move. Try again.\n'),
+        move_pawn(Board, PointX, PointY, NewBoard, Opponent)
+    ).
+
+% Check if the pawn can move to a new location.
+can_move_pawn(Board, X, Y, NewX, NewY) :-
+    is_empty(Board, NewX, NewY),
+    (X =:= NewX ; Y =:= NewY ; abs(X - NewX) =:= abs(Y - NewY)),
+    \+ jump_over_checkers(Board, X, Y, NewX, NewY).
+
+% Check if the pawn can jump over checkers.
+jump_over_checkers(_, X, Y, X, Y).
+jump_over_checkers(Board, X, Y, NewX, NewY) :-
+    (X =:= NewX, Y < NewY - 1, Y1 is Y + 1 ; Y =:= NewY, X < NewX - 1, X1 is X + 1 ; X < NewX - 1, Y < NewY - 1, X1 is X + 1, Y1 is Y + 1),
+    is_empty(Board, X1, Y1),
+    jump_over_checkers(Board, X1, Y1, NewX, NewY).
+
+pie_rule([Player|Board], NewBoard) :-
+    display_game([Player|Board]),
+    write('Player '), write(Player), write(', choose an Y starting point:'),
+    read(PointY),
+    write('Player '), write(Player), write(', now choose an X starting point: '),
+    read(PointX),
     (is_empty(Board, PointX, PointY) ->
         update_board(Board, Player, PointX, PointY, NewBoard);
         write('Invalid choice. Try again.\n'),
-        apply_pie_rule(Board, Player, NewBoard)
+        pie_rule([Player|Board], NewBoard)
+    ).
+
+% Checks if a point is empty.
+is_empty(Board, X, Y) :-
+    is_inside(Board, X, Y),
+    nth0(Y, Board, Row),
+    nth0(X, Row, 0).
+
+% Check if a point is inside the board.
+is_inside(Board, X, Y) :-
+    length(Board, Rows),
+    Y >= 0,
+    Y < Rows,
+    nth0(Y, Board, Row),
+    length(Row, Cols),
+    X >= 0,
+    X < Cols.
+
+% play_game
+gameplay(Board, Player, LastPlayer, FinalScore) :-
+    (game_over(Board, LastPlayer) ->
+        calculate_final_score(Board, Player, FinalScore);
+        make_move(Board, Player, NewBoard),
+        switch_player(Player, NextPlayer),
+        gameplay(NewBoard, NextPlayer, Player, FinalScore)
+    ).
+
+game_over(Board, LastPlayer) :-
+    \+ can_move(Board, 0, 0), % If the pawn can't move from the center, it's trapped.
+    switch_player(LastPlayer, LastOpponent),
+    can_move(Board, 0, 0, LastOpponent). % Check if the opponent can make any move.
+
+can_move(Board, X, Y) :- is_empty(Board, X, Y).
+can_move(Board, X, Y, Player) :- 
+    is_empty(Board, X, Y), 
+    checkers_around(Board, X, Y, Player, _).
+
+calculate_final_score(Board, Player, Score) :-
+    findall(Point, adjacent_or_under(Board, 0, 0, Player, Point), Points),
+    length(Points, Score).
+
+adjacent_or_under(Board, X, Y, Player, Point) :-
+    adjacent(Board, X, Y, Player, Point).
+adjacent_or_under(Board, X, Y, Player, Point) :-
+    under(Board, X, Y, Player, Point).
+
+% Check if a point is adjacent to the given player checker.
+adjacent(Board, X, Y, Player, Point) :-
+    is_adjacent(X, Y, AdjX, AdjY),
+    is_inside(Board, AdjX, AdjY),
+    nth0(AdjY, Board, Row),
+    nth0(AdjX, Row, Player),
+    Point = [AdjX, AdjY].
+
+is_adjacent(X1, Y1, X2, Y2) :-
+    (X1 =:= X2, Y1 =:= Y2 - 1) ;
+    (X1 =:= X2, Y1 =:= Y2 + 1) ;
+    (X1 =:= X2 - 1, Y1 =:= Y2) ;
+    (X1 =:= X2 + 1, Y1 =:= Y2).
+
+% Check if a point is under the given player checker.
+under(Board, X, Y, Player, Point) :-
+    Y1 is Y + 1,
+    is_inside(Board, X, Y1),
+    nth0(Y1, Board, Row),
+    nth0(X, Row, Player),
+    Point = [X, Y1].
+
+% Report the winner of the game.
+report_winner(Score) :-
+    (Score > 0 ->
+        write('Player with the most adjacent or under checkers wins.\n'),
+        write('Player with '),
+        write(Score),
+        write(' points wins the game.\n');
+        write('It\'s a draw! No one wins.')
     ).

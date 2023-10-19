@@ -33,8 +33,6 @@ run_mode(0) :-
     write('\nThank you for playing. Hope to see you soon!\n').
 
 run_mode(1) :-
-    playing_order(1),
-    playing_order(2),
     play_game,
     menu.
 
