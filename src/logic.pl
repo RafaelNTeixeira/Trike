@@ -3,58 +3,37 @@ play_game :-
     initial_state(8, GameState),
     initial_player(Player),
     write('\nPlayer 1 starts with the black pieces\n'), nl,
+    write('Player 2 starts with the white pieces\n'), nl,
     write('\ninitial_player\n'),
     pie_rule(GameState, NewBoard),
     write('pie_rule\n'),
     switch_player(Player, Opponent),
     write('switch_player\n'),
-    gameplay(NewBoard, Opponent, Player, FinalScore), % play_game
-    write('gameplay\n'),
-    report_winner(FinalScore).
+    % gameplay(NewBoard, Opponent, Player, FinalScore), % play_game
+    write('gameplay\n'),   
+    report_winner(FinalScore),
+    write('report_winner\n'),
 
-initial_player(black).
+initial_player(b).
 
-/*
-checkificanplay(GameState, Row, Column) :- 
-    Row1 is Row - 48, % 0 is 48.
-    Column1 is Column - 97, % a is 97.
-    get_element_at_index(GameState, Row, RowList),
-    get_element_at_index(RowList, Column, Elem),
-    is_zero(Elem).
-*/
+switch_player(b, w).
+switch_player(w, b).
 
-/*
-chooseposition(GameState, Row, Column) :-
-    repeat,
-    write("Choose the starting position."),
-    write("Choose Row (The row between 1 - 8): "),
-    read(Row),
-    write("Choose Column (The column between a - o): "),
-    read(Column),
-    checkificanplay(GameState, Row, Column).
-*/
-
-switch_player(black, white).
-switch_player(white, black).
-
-update_board(Board, Player, PointX, PointY, NewBoard) :-
-    write('Im in\n'),
-    % replace(Board, PointX, PointY, Player, TempBoard),
-    write('replace\n'),
-    % move_pawn(TempBoard, PointX, PointY, NewBoard, Opponent),
-    write('move_pawn\n'),
-    write('Player 2, do you want to switch colors?\n'),
+update_board(Board, CurPlayer, PointX, PointY, NewBoard) :-
+    write('Player Whites, do you want to switch colors?\n'),
     write('1. Yes'), nl, write('2. No'), nl,
     read(Choice),
-    (Choice =:= 1 -> Player = white; Choice =:= 2 -> Player = black; Player = black).
-    % switch_player(Player, Opponent),
-    write('Switched players').
-
-/*  
-    Pie Rule:
-    - The first player choose the starting position;
-    - The second player as the chance to change color with the first player. 
-*/
+    (Choice =:= 1 -> Player = w; Choice =:= 2 -> Player = b; Player = b),
+    switch_player(Player, Opponent),
+    write(Player), nl,
+    write(Opponent), nl,
+    replace(Board, PointX, PointY, Player, TempBoard),
+    write('replace\n'),
+    display_board(TempBoard),
+    % move_pawn(TempBoard, PointX, PointY, NewBoard, Opponent),
+    write('move_pawn\n'),
+    % display_board(Board),
+    write('display_board\n').
 
 % Replace a cell in the board with a new value.
 replace([Row | Rest], 0, Y, NewValue, [NewRow | Rest]) :-
@@ -73,16 +52,20 @@ replace_in_row([Value | Rest], X, Y, NewValue, [Value | NewRest]) :-
 
 move_pawn(Board, PointX, PointY, NewBoard, Opponent) :-
     replace(Board, PointX, PointY, neutral, TempBoard),
-    write('Move the pawn to (X Y): '),
-    read(NewX), read(NewY),
+    write('X position to place your piece: '),
+    read(NewY), 
+    write('Y position to place your piece: '),
+    read(NewX),
     (can_move_pawn(TempBoard, PointX, PointY, NewX, NewY) ->
-        replace(TempBoard, NewX, NewY, neutral, NewBoard);
+        write('can move pawn\n'),
+        replace(TempBoard, NewX, NewY, neutral, NewBoard),
+        write('can replace pawn\n');
         write('Invalid pawn move. Try again.\n'),
         move_pawn(Board, PointX, PointY, NewBoard, Opponent)
     ).
 
 % Check if the pawn can move to a new location.
-can_move_pawn(Board, X, Y, NewX, NewY) :-
+can_move_pawn(Board, X, Y, NewX, NewY) :-  
     is_empty(Board, NewX, NewY),
     (X =:= NewX ; Y =:= NewY ; abs(X - NewX) =:= abs(Y - NewY)),
     \+ jump_over_checkers(Board, X, Y, NewX, NewY).
@@ -121,6 +104,26 @@ is_inside(Board, X, Y) :-
     length(Row, Cols),
     X >= 0,
     X < Cols.
+
+/*
+checkificanplay(GameState, Row, Column) :- 
+    Row1 is Row - 48, % 0 is 48.
+    Column1 is Column - 97, % a is 97.
+    get_element_at_index(GameState, Row, RowList),
+    get_element_at_index(RowList, Column, Elem),
+    is_zero(Elem).
+*/
+
+/*
+chooseposition(GameState, Row, Column) :-
+    repeat,
+    write("Choose the starting position."),
+    write("Choose Row (The row between 1 - 8): "),
+    read(Row),
+    write("Choose Column (The column between a - o): "),
+    read(Column),
+    checkificanplay(GameState, Row, Column).
+*/
 
 % play_game
 gameplay(Board, Player, LastPlayer, FinalScore) :-

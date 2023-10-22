@@ -5,8 +5,7 @@ menu :-
     run_mode(Option). % desencadeia ação da opção selecionada do menu
 
 clear_save :-
-    abolish(size/1),
-    abolish(player/1).
+    abolish(size/1).
 
 display_menu :-
     write('  _________  ______ ______ \n'),
@@ -65,10 +64,3 @@ run_mode(5) :-
     write('0. Main menu\n\n'),
     read(0),
     menu.
-
-playing_order(1) :-
-    assertz(player(p1)).
-
-playing_order(2) :-
-    assertz(player(p2)).
-
