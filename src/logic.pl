@@ -1,38 +1,31 @@
+initial_player(b).
+
+switch_player(b, w).
+switch_player(w, b).
+
 % play_game will receive Level variable
 play_game :- 
     initial_state(8, GameState),
     initial_player(Player),
     write('\nPlayer 1 starts with the black pieces\n'), nl,
     write('Player 2 starts with the white pieces\n'), nl,
-    write('\ninitial_player\n'),
     pie_rule(GameState, NewBoard),
-    write('pie_rule\n'),
     switch_player(Player, Opponent),
-    write('switch_player\n'),
     % gameplay(NewBoard, Opponent, Player, FinalScore), % play_game
     write('gameplay\n'),   
-    report_winner(FinalScore),
-    write('report_winner\n'),
+    % report_winner(FinalScore),
+    write('report_winner\n').
 
-initial_player(b).
+update_board_first_play(Board, Player, PointX, PointY, NewBoard) :-
+    replace(Board, PointX, PointY, Player, NewBoard),
+    display_board(NewBoard).
 
-switch_player(b, w).
-switch_player(w, b).
-
-update_board(Board, CurPlayer, PointX, PointY, NewBoard) :-
-    write('Player Whites, do you want to switch colors?\n'),
-    write('1. Yes'), nl, write('2. No'), nl,
-    read(Choice),
-    (Choice =:= 1 -> Player = w; Choice =:= 2 -> Player = b; Player = b),
-    switch_player(Player, Opponent),
-    write(Player), nl,
-    write(Opponent), nl,
+update_board(Board, Player, PointX, PointY, NewBoard) :-
     replace(Board, PointX, PointY, Player, TempBoard),
-    write('replace\n'),
     display_board(TempBoard),
-    % move_pawn(TempBoard, PointX, PointY, NewBoard, Opponent),
+    move_pawn(TempBoard, PointX, PointY, NewBoard, Opponent),
     write('move_pawn\n'),
-    % display_board(Board),
+    display_board(NewBoard),
     write('display_board\n').
 
 % Replace a cell in the board with a new value.
@@ -80,11 +73,24 @@ jump_over_checkers(Board, X, Y, NewX, NewY) :-
 pie_rule([Player|Board], NewBoard) :-
     display_board(Board),
     write('Player '), write(Player), write(', choose an X starting point:'),
-    read(PointY),
-    write('Player '), write(Player), write(', now choose an Y starting point: '),
     read(PointX),
+    write('Player '), write(Player), write(', now choose an Y starting point: '),
+    read(PointY),
     (is_empty(Board, PointX, PointY) ->
-        update_board(Board, Player, PointX, PointY, NewBoard);
+        replace(Board, PointX, PointY, Player, TempBoard),
+        nl, nl,
+        write('Player 1\'s play:\n'),
+        display_board(TempBoard),
+        write('Player Whites, do you want to switch colors?\n'),
+        write('1. Yes'), nl, write('2. No'), nl,
+        read(Choice),
+        (Choice =:= 1 -> CurPlayer = b; Choice =:= 2 -> CurPlayer = w; CurPlayer = w), % fazer função que faz a troca
+        switch_player(CurPlayer, Opponent), nl,
+        write('\nPlayer 2\'s play:\n'),
+        update_board_first_play(TempBoard, CurPlayer, PointX, PointY, NewBoard),
+        (Choice =:= 1 -> 
+            write('\nPlayer 1 is now playing with the white pieces\n'),
+            write('Player 2 is now playing with the black pieces\n'); true);
         write('Invalid choice. Try again.\n'),
         pie_rule([Player|Board], NewBoard)
     ).
@@ -92,18 +98,18 @@ pie_rule([Player|Board], NewBoard) :-
 % Checks if a point is empty.
 is_empty(Board, X, Y) :-
     is_inside(Board, X, Y),
-    nth0(Y, Board, Row),
-    nth0(X, Row, 0).
+    nth0(X, Board, Col),
+    nth0(Y, Col, 0).
 
 % Check if a point is inside the board.
 is_inside(Board, X, Y) :-
     length(Board, Rows),
-    Y >= 0,
-    Y < Rows,
-    nth0(Y, Board, Row),
-    length(Row, Cols),
     X >= 0,
-    X < Cols.
+    X < Rows,
+    nth0(X, Board, Row),
+    length(Row, Cols),
+    Y >= 0,
+    Y < Cols.
 
 /*
 checkificanplay(GameState, Row, Column) :- 

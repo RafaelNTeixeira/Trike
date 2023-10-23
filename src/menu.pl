@@ -46,7 +46,7 @@ run_mode(4) :-
 
 run_mode(5) :-
     nl, nl,
-    write('Trike is a strategic and balanced abstract strategy game for two players played on a hexagonal grid.\n'),
+    write('Trike is a strategic and balanced abstract strategy game for two players.\n'),
     write('A neutral pawn is initially placed in the center of the board.\n\n'),
     write('PIE RULE:\n'),
     write('The first player selects a color and places a checker on the board.\n'),

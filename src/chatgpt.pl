@@ -217,6 +217,3 @@ report_winner(Score) :-
         write(' points wins the game.\n');
         write('It\'s a draw! No one wins.')
     ).
-
-% Start the game when the script is run.
-:- start.

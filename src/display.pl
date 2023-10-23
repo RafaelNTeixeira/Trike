@@ -1,5 +1,5 @@
 initial_state(Size, GameState) :-
-    GameState = [p1, 
+    GameState = [b, 
         [0],
         [0,0],
         [0,0,0],
@@ -76,8 +76,6 @@ print_padding(N) :-
     print_padding(NextN).
 print_padding(0).
 
-identity(p1, I) :- I = '1'.  % Player 1
-identity(p2, I) :- I = '2'.  % Player 2
 identity(0, I) :- I = ' '.   % Empty space
 identity(w, I) :- I = 'W'.   % White checker
 identity(b, I) :- I = 'B'.   % Black checker
