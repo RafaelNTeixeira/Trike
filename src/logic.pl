@@ -3,18 +3,61 @@ initial_player(b).
 switch_player(b, w).
 switch_player(w, b).
 
+print_indication :-
+    write('============================================'), nl,
+    write('Player b = Player with the black pieces(b)'), nl,
+    write('Player w = Player with the white pieces(w)'), nl,
+    write('============================================'), nl, nl,
+    write('\nPlayer 1 starts with the black pieces\n'),
+    write('Player 2 starts with the white pieces\n'), nl.
+
 % play_game will receive Level variable
 play_game :- 
     initial_state(8, GameState),
-    initial_player(Player),
-    write('\nPlayer 1 starts with the black pieces\n'), nl,
-    write('Player 2 starts with the white pieces\n'), nl,
-    pie_rule(GameState, NewBoard),
-    switch_player(Player, Opponent),
-    % gameplay(NewBoard, Opponent, Player, FinalScore), % play_game
-    write('gameplay\n'),   
+    initial_player(Player), nl, 
+    print_indication,
+    pie_rule(GameState, NewGameState),
+    % gameplay(NewGameState, Player, FinalScore), % play_game
+    write('gameplay\n'),
     % report_winner(FinalScore),
     write('report_winner\n').
+
+gameplay(GameState, FinalScore) :-
+    (game_over(GameState) -> calculate_final_score(GameState, FinalScore);
+        move(GameState, Move, NewGameState), % move chama valid_moves(+GameState, +Player, -ListOfMoves) ou chama-se aqui e adiciona-se Player como argumento em gameplay ???
+        gameplay(NewGameState, FinalScore)
+    ).
+
+calculate_final_score([Player|Board], Score) :-
+    findall(Point, adjacent_or_under(Board, 0, 0, Player, Point), Points),
+    length(Points, Score).
+
+game_over([LastPlayer|Board]) :-
+    \+ can_move(Board, 0, 0), % If the pawn can't move from the center, it's trapped.
+    switch_player(LastPlayer, LastOpponent),
+    can_move(Board, 0, 0, LastOpponent). % Check if the opponent can make any move.
+
+can_move(Board, X, Y) :- is_empty(Board, X, Y).
+can_move(Board, X, Y, Player) :- 
+    is_empty(Board, X, Y), 
+    checkers_around(Board, X, Y, Player, _).
+
+% Check if there are adjacent checkers of the same color.
+checkers_around(Board, X, Y, Player, Checkers) :-
+    findall(Point, adjacent_or_under(Board, X, Y, Player, Point), Checkers),
+    length(Checkers, Count),
+    Count >= 2. % There must be at least 2 adjacent checkers to make a move.
+    
+move([Player|Board], Move, [NewPlayer|NewBoard]) :- % need to add Move argument and NewPlayer
+    display_board(Board),
+    write('Player '), write(Player), write(', make a move (X Y): '),
+    read(PointX), read(PointY),
+    (valid_move(Board, Player, PointX, PointY) ->   % valid_moves(+GameState, +Player, -ListOfMoves)
+        update_board(Board, Player, PointX, PointY, NewBoard),
+        switch_player(NewPlayer, Player);
+        write('Invalid move. Try again.\n'),
+        move(Board, Player, NewBoard)
+    ).
 
 update_board_first_play(Board, Player, PointX, PointY, NewBoard) :-
     replace(Board, PointX, PointY, Player, NewBoard),
@@ -70,7 +113,7 @@ jump_over_checkers(Board, X, Y, NewX, NewY) :-
     is_empty(Board, X1, Y1),
     jump_over_checkers(Board, X1, Y1, NewX, NewY).
 
-pie_rule([Player|Board], NewBoard) :-
+pie_rule([Player|Board], [NextPlayer|NewBoard]) :-
     display_board(Board),
     write('Player '), write(Player), write(', choose an X starting point:'),
     read(PointX),
@@ -84,15 +127,16 @@ pie_rule([Player|Board], NewBoard) :-
         write('Player Whites, do you want to switch colors?\n'),
         write('1. Yes'), nl, write('2. No'), nl,
         read(Choice),
-        (Choice =:= 1 -> CurPlayer = b; Choice =:= 2 -> CurPlayer = w; CurPlayer = w), % fazer função que faz a troca
-        switch_player(CurPlayer, Opponent), nl,
+        (Choice =:= 1 -> CurPlayer = b; Choice =:= 2 -> CurPlayer = w; CurPlayer = w), % fazer função que faz a troca. Repetir sempre se n escolher o número válido
+        nl,
         write('\nPlayer 2\'s play:\n'),
         update_board_first_play(TempBoard, CurPlayer, PointX, PointY, NewBoard),
+        NextPlayer = w,
         (Choice =:= 1 -> 
             write('\nPlayer 1 is now playing with the white pieces\n'),
-            write('Player 2 is now playing with the black pieces\n'); true);
+            write('Player 2 is now playing with the black pieces\n'), nl; true);
         write('Invalid choice. Try again.\n'),
-        pie_rule([Player|Board], NewBoard)
+        pie_rule([Player|Board], [NPlayer|NBoard])
     ).
 
 % Checks if a point is empty.
@@ -130,29 +174,6 @@ chooseposition(GameState, Row, Column) :-
     read(Column),
     checkificanplay(GameState, Row, Column).
 */
-
-% play_game
-gameplay(Board, Player, LastPlayer, FinalScore) :-
-    (game_over(Board, LastPlayer) ->
-        calculate_final_score(Board, Player, FinalScore);
-        make_move(Board, Player, NewBoard),
-        switch_player(Player, NextPlayer),
-        gameplay(NewBoard, NextPlayer, Player, FinalScore)
-    ).
-
-game_over(Board, LastPlayer) :-
-    \+ can_move(Board, 0, 0), % If the pawn can't move from the center, it's trapped.
-    switch_player(LastPlayer, LastOpponent),
-    can_move(Board, 0, 0, LastOpponent). % Check if the opponent can make any move.
-
-can_move(Board, X, Y) :- is_empty(Board, X, Y).
-can_move(Board, X, Y, Player) :- 
-    is_empty(Board, X, Y), 
-    checkers_around(Board, X, Y, Player, _).
-
-calculate_final_score(Board, Player, Score) :-
-    findall(Point, adjacent_or_under(Board, 0, 0, Player, Point), Points),
-    length(Points, Score).
 
 adjacent_or_under(Board, X, Y, Player, Point) :-
     adjacent(Board, X, Y, Player, Point).
