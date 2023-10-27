@@ -1,12 +1,21 @@
 % play_game will receive Level variable
+/* O switch player é só para acontecer quando o second player quiser!! 
+    
+    Pie Rule:
+    - The first player choose the starting position;
+    - The second player as the chance to change color with the first player. 
+*/
+
 play_game :- 
     initial_state(8, GameState),
     initial_player(Player),
     write('\nPlayer 1 starts with the black pieces\n'), nl,
     write('\ninitial_player\n'),
     pie_rule(GameState, NewBoard),
-    write('pie_rule\n'),
-    switch_player(Player, Opponent),
+    write('Pie_rule\n'),
+    write('Does the second player want to swap sides with the first player? [Yes | No]\n'),
+    read(Option),
+    (Option = 'Yes' -> switch_player(Player, Opponent); write('Players keep the positions!')),
     write('switch_player\n'),
     gameplay(NewBoard, Opponent, Player, FinalScore), % play_game
     write('gameplay\n'),
@@ -50,10 +59,8 @@ update_board(Board, Player, PointX, PointY, NewBoard) :-
     % switch_player(Player, Opponent),
     write('Switched players').
 
-/*  
-    Pie Rule:
-    - The first player choose the starting position;
-    - The second player as the chance to change color with the first player. 
+/*
+A função replace está a dar!
 */
 
 % Replace a cell in the board with a new value.
