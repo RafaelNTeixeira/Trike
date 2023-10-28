@@ -5,8 +5,7 @@ menu :-
     run_mode(Option). % desencadeia ação da opção selecionada do menu
 
 clear_save :-
-    abolish(size/1),
-    abolish(player/1).
+    abolish(size/1).
 
 display_menu :-
     write('  _________  ______ ______ \n'),
@@ -47,7 +46,7 @@ run_mode(4) :-
 
 run_mode(5) :-
     nl, nl,
-    write('Trike is a strategic and balanced abstract strategy game for two players played on a hexagonal grid.\n'),
+    write('Trike is a strategic and balanced abstract strategy game for two players.\n'),
     write('A neutral pawn is initially placed in the center of the board.\n\n'),
     write('PIE RULE:\n'),
     write('The first player selects a color and places a checker on the board.\n'),
@@ -65,10 +64,3 @@ run_mode(5) :-
     write('0. Main menu\n\n'),
     read(0),
     menu.
-
-playing_order(1) :-
-    assertz(player(p1)).
-
-playing_order(2) :-
-    assertz(player(p2)).
-
