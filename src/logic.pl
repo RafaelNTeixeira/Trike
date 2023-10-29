@@ -13,55 +13,243 @@ print_indication :-
     write('Player 2 starts with the white pieces\n'), nl.
 
 % play_game will receive Level variable
-/* O switch player é só para acontecer quando o second player quiser!! 
-    
-    Pie Rule:
-    - The first player choose the starting position;
-    - The second player as the chance to change color with the first player. 
-*/
-
 play_game :- 
     initial_state(8, GameState),
     initial_player(Black), nl, 
     other_player(White),
     print_indication,
     pie_rule(GameState, PlayerPos, NewGameState),
-    gameplay(NewGameState, PlayerPos, FinalScore), % play_game
+    gameplay(NewGameState, PlayerPos, FinalScore, Winner), % play_game
     write('gameplay\n'),
-    % report_winner(FinalScore),
+    report_winner(FinalScore, Winner),
     write('report_winner\n').
 
-gameplay([Player|Board], PlayerPos, FinalScore) :-
-    (game_over([Player|Board], PlayerPos) -> write('here'), nl, calculate_final_score([Player|Board], FinalScore);
-        valid_moves([Player|Board], PlayerPos, ListOfMoves),
+gameplay([Player|Board], PlayerPos, FinalScore, Winner) :-
+    valid_moves([Player|Board], PlayerPos, ListOfMoves),
+    ((game_over([Player|ListOfMoves]))-> 
         write('Player '), write(Player), write(', choose an X starting point:'),
         read(PointX),
         write('Player '), write(Player), write(', now choose an Y starting point: '),
         read(PointY),
         Move = ([PointX, PointY]),
         move([Player|ListOfMoves], Move, [NewPlayer|NewBoard]), 
-        gameplay([NewPlayer|NewBoard], Move, FinalScore) 
+        gameplay([NewPlayer|NewBoard], Move, FinalScore, Winner);
+
+        calculate_final_score([Player|Board], PlayerPos, FinalScore, Winner)
     ).
+
+game_over([Player|ListOfMoves]) :-
+    check_board(ListOfMoves).
 
 valid_moves([CurPlayer|Board], [PlayerX, PlayerY], ListOfMoves) :-
     swap(PlayerX, PlayerY, Board, ListOfMoves),
     display_game([CurPlayer|ListOfMoves]).
+    
+calculate_final_score([Player|Board], [PlayerX, PlayerY], Score, Winner) :-
+    count_around_end(Board, PlayerX, PlayerY, [0,0], ListOfScores),
+    find_max(ListOfScores, Score),
+    find_max_position(ListOfScores, Res),
+    ((Res = 0) -> Winner = w;
+        (Res = 1) -> Winner = b;
+            Winner = t   
+    ).
 
+
+/*------------------------------------------------------------------------------------*/
+
+increment_first([OldFirst | Rest], [NewFirst | Rest]) :-
+    NewFirst is OldFirst + 1.
+
+increment_second(List, NewList) :-
+    increment_second_helper(List, NewList, 0).
+
+increment_second_helper([], [], _).
+increment_second_helper([H|T], [NewH|T], Index) :-
+    Index =:= 1, % Check if the current index is 1 (the second element)
+    NewH is H + 1.
+increment_second_helper([H|T], [H|NewT], Index) :-
+    Index \= 1, % Index is not 1, so keep the element as is
+    NewIndex is Index + 1,
+    increment_second_helper(T, NewT, NewIndex).
+
+/*------------------------------------------------------------------------------------*/
+
+count_around_end(Board, Row, Col, Start, ListOfScores) :-
+    count_around_end_up(Board, Row, Col, Start, Temp1),
+    count_around_end_down(Board, Row, Col, Temp1, Temp2),
+    count_around_end_left(Board, Row, Col, Temp2, Temp3),
+    count_around_end_right(Board, Row, Col, Temp3, Temp4),
+    count_around_end_diagonal1(Board, Row, Col, Temp4, Temp5),
+    count_around_end_diagonal2(Board, Row, Col, Temp5, Temp6),
+    count_around_end_diagonal3(Board, Row, Col, Temp6, Temp7),
+    count_around_end_diagonal4(Board, Row, Col, Temp7, Temp8),
+    count_around_end_under(Board, Row, Col, Temp8, ListOfScores).
+    % print_list(ListOfScores).
+
+count_around_end_up(Board, Row, Col, Start, ListOfScores) :-
+    RowAbove is Row - 1,
+    ((RowAbove < 0) -> ListOfScores = Start; 
+        custom_nth1(RowAbove, Board, RowAboveList),
+        custom_nth1(Col, RowAboveList, Elem),
+        ((Elem = w) -> increment_first(Start, ListOfScores);
+            (Elem = b) -> increment_second(Start, ListOfScores);
+                ListOfScores = Start
+        )
+    ).
+
+count_around_end_down(Board, Row, Col, Start, ListOfScores) :-
+    RowBelow is Row + 1,
+    ((RowBelow > 12) -> ListOfScores = Start;
+        custom_nth1(RowBelow, Board, RowBelowList),
+        custom_nth1(Col, RowBelowList, Elem),
+        ((Elem = w) -> increment_first(Start, ListOfScores);
+            (Elem = b) -> increment_second(Start, ListOfScores);
+                ListOfScores = Start
+        )
+    ).
+
+count_around_end_left(Board, Row, Col, Start, ListOfScores) :-
+    custom_nth1(Row, Board, RowList),
+    ColLeft is Col - 1,
+    ((ColLeft < 0) -> ListOfScores = Start;
+        custom_nth1(ColLeft, RowList, Elem),
+        ((Elem = w) -> increment_first(Start, ListOfScores);
+            (Elem = b) -> increment_second(Start, ListOfScores);
+                ListOfScores = Start
+        )
+    ).
+
+count_around_end_right(Board, Row, Col, Start, ListOfScores) :-
+    custom_nth1(Row, Board, RowList),
+    length(RowList, Len),
+    Len1 is Len - 1,
+    ColRight is Col + 1,
+    ((ColRight > Len1) -> ListOfScores = Start;
+        custom_nth1(ColRight, RowList, Elem),
+        ((Elem = w) -> increment_first(Start, ListOfScores);
+            (Elem = b) -> increment_second(Start, ListOfScores);
+                ListOfScores = Start
+        )
+    ).
+
+count_around_end_diagonal1(Board, Row, Col, Start, ListOfScores) :-
+    RowAbove is Row - 1,
+    ColLeft is Col - 1,
+    ((RowAbove < 0 ; ColLeft < 0) -> ListOfScores = Start;
+        custom_nth1(RowAbove, Board, RowAboveList),
+        custom_nth1(ColLeft, RowAboveList, Elem),
+        ((Elem = w) -> increment_first(Start, ListOfScores);
+            (Elem = b) -> increment_second(Start, ListOfScores);
+                ListOfScores = Start
+        )
+    ).
+
+count_around_end_diagonal2(Board, Row, Col, Start, ListOfScores) :-
+    RowBelow is Row + 1,
+    ColLeft is Col - 1,
+    ((RowBelow > 12 ; ColLeft < 0) -> ListOfScores = Start;
+        custom_nth1(RowBelow, Board, RowBelowList),
+        custom_nth1(ColLeft, RowBelowList, Elem),
+        ((Elem = w) -> increment_first(Start, ListOfScores);
+            (Elem = b) -> increment_second(Start, ListOfScores);
+                ListOfScores = Start
+        )
+    ).
+
+count_around_end_diagonal3(Board, Row, Col, Start, ListOfScores) :-
+    RowAbove is Row - 1,
+    ColRight is Col + 1,
+    ((RowAbove < 0) -> ListOfScores = Start;
+        custom_nth1(RowAbove, Board, RowAboveList), 
+        length(RowAboveList, Len),
+        Len1 is Len - 1,
+        (ColRight > Len1) -> ListOfScores = Start;
+            custom_nth1(ColRight, RowAboveList, Elem),
+            ((Elem = w) -> increment_first(Start, ListOfScores);
+                (Elem = b) -> increment_second(Start, ListOfScores);
+                    ListOfScores = Start
+            )
+    ).
+
+count_around_end_diagonal4(Board, Row, Col, Start, ListOfScores) :-
+    RowBelow is Row + 1,
+    ColRight is Col + 1,
+    custom_nth1(RowBelow, Board, RowBelowList),
+    length(RowBelowList, Len),
+    Len1 is Len - 1,
+    ((RowBelow > 12 ; ColRight > Len1) -> ListOfScores = Start;
+        custom_nth1(ColRight, RowBelowList, Elem),
+        ((Elem = w) -> increment_first(Start, ListOfScores);
+            (Elem = b) -> increment_second(Start, ListOfScores);
+                ListOfScores = Start
+        )
+    ).
+
+
+count_around_end_under(Board, Row, Col, Start, ListOfScores) :-
+    custom_nth1(Row, Board, RowList),
+    custom_nth1(Col, RowList, Elem),
+    ((Elem = w) -> increment_first(Start, ListOfScores);
+        (Elem = b) -> increment_second(Start, ListOfScores);
+            ListOfScores = Start
+    ).
+
+/*------------------------------------------------------------------------------------*/
+% Base case: If the list contains only one element, its position is 0.
+max_position([MaxValue], 0) :- !.
+
+% Recursive case:
+% - Find the maximum position of the tail of the list.
+% - If the head of the list is greater than or equal to the maximum of the tail,
+%   the maximum position of the list is 0 (the current position).
+% - If the head of the list is less than the maximum of the tail,
+%   the maximum position of the list is the maximum position of the tail + 1.
+
+max_position([Head | Tail], MaxPosition) :-
+    max_position(Tail, TailMaxPosition),
+    find_max(Tail, TailMax),
+    Head >= TailMax,
+    MaxPosition is 0, !.
+
+max_position([Head | Tail], MaxPosition) :-
+    max_position(Tail, TailMaxPosition),
+    find_max(Tail, TailMax),
+    Head < TailMax,
+    MaxPosition is TailMaxPosition + 1.
+
+% Predicate to find the position of the maximum value in a list.
+find_max_position(List, MaxPosition) :-
+    max_position(List, MaxPosition).
+
+/* -------------------------------------------------------------- */
+% Base case: If the list contains only one element, the maximum is that element.
+max_in_list([X], X) :- !.
+
+% Recursive case:
+% - If the head of the list is greater than or equal to the maximum of the tail,
+%   the maximum of the list is the head.
+% - If the head of the list is less than the maximum of the tail,
+%   the maximum of the list is the maximum of the tail.
+max_in_list([Head | Tail], Max) :-
+    max_in_list(Tail, TailMax),
+    Head >= TailMax,
+    Max is Head, !.
+max_in_list([Head | Tail], Max) :-
+    max_in_list(Tail, TailMax),
+    Head < TailMax,
+    Max is TailMax.
+
+% Predicate to find the maximum value in a list.
+find_max(List, Max) :-
+    max_in_list(List, Max).
+/*------------------------------------------------------------------------------------*/
+/*
 calculate_final_score([Player|Board], Score) :-
+    write('here'), nl,
     findall(Point, adjacent_or_under(Board, 0, 0, Player, Point), Points),
     length(Points, Score). % guarda em score o tamanho de Points (peças que servem para pontuação)
-
-/* game_over([LastPlayer|Board]) :-
-    \+ can_move(Board, 0, 0), % If the pawn can't move from the center, it's trapped.
-    switch_player(LastPlayer, LastOpponent),
-    can_move(Board, 0, 0, LastOpponent). % Check if the opponent can make any move.
 */
-
-game_over([Player|Board], [PlayerX, PlayerY]) :-
-    swap(PlayerX, PlayerY, Board, ListOfMoves),
-    check_board(ListOfMoves).
-
-
+/*------------------------------------------------------------------------------------*/
 % Define a predicate to check if there is a 'p' in a list.
 contains_p([p|_]).
 contains_p([_|T]) :- contains_p(T).
@@ -249,8 +437,9 @@ under(Board, X, Y, Player, Point) :- % pode n estar correto. Objetivo é verific
     Point = [X1, Y].
 
 % Report the winner of the game.
-report_winner(Score) :-
-    (Score > 0 ->
+report_winner(Score, Winner) :-
+    (Winner \= t ->
+        write('Player '), write(Winner), write('is the winner!!!\n'),
         write('Player with the most adjacent or under checkers wins.\n'),
         write('Player with '),
         write(Score),
