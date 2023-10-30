@@ -1,5 +1,4 @@
 initial_player(b).
-other_player(w).
 
 switch_player(b, w).
 switch_player(w, b).
@@ -12,11 +11,12 @@ print_indication :-
     write('\nPlayer 1 starts with the black pieces\n'),
     write('Player 2 starts with the white pieces\n'), nl.
 
-% play_game will receive Level variable
+play_game_bot(Level) :-
+    initial_state(8,GameState).
+
+
 play_game :- 
     initial_state(8, GameState),
-    initial_player(Black), nl, 
-    other_player(White),
     print_indication,
     pie_rule(GameState, PlayerPos, NewGameState),
     gameplay(NewGameState, PlayerPos, FinalScore, Winner), % play_game
@@ -370,7 +370,7 @@ pie_rule([Player|Board], PlayerPos, [CurPlayer|NewBoard]) :-
             write('Player 2 is now playing with the black pieces\n'), nl; true),
         PlayerPos = [PointX, PointY];
         write('Invalid choice. Try again.\n'),
-        pie_rule([Player|Board], PlayerPos, [CurPlayer|NBoard])
+        pie_rule([Player|Board], PlayerPos, [CurPlayer|NewBoard])
     ).
 
 % Checks if a point is empty.

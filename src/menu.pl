@@ -8,14 +8,14 @@ clear_save :-
     abolish(size/1).
 
 display_menu :-
-    write('  _________  ______ ______ \n'),
-    write(' /_  __/ _ \\/  _/ //_/ __/ \n'),
-    write('  / / / , _// // ,< / _/   \n'),
-    write(' /_/ /_/|_/___/_/|_/___/   \n'),
+    write('    _________  ______ ______ \n'),
+    write('   /_  __/ _ \\/  _/ //_/ __/ \n'),
+    write('    / / / , _// // ,< / _/   \n'),
+    write('   /_/ /_/|_/___/_/|_/___/   \n'),
     nl,
     write('1. Player Vs Player        \n'),
-    write('2. Player Vs Computer(Easy)\n'),
-    write('3. Player Vs Computer(Hard)\n'),
+    write('2. Player Vs Computer (Easy)\n'),
+    write('3. Player Vs Computer (Hard)\n'),
     write('4. Computer Vs Computer    \n'),
     write('5. Instructions            \n'), 
     write('0. Quit                    \n'),
@@ -36,10 +36,14 @@ run_mode(1) :-
     menu.
 
 run_mode(2) :-
-    write('\nMode 2\n').
+    play_game_bot(2),
+    write('\nMode 2\n'),
+    menu.
 
 run_mode(3) :-
-    write('\nMode 3\n').
+    play_game_bot(3),
+    write('\nMode 3\n'),
+    menu.
 
 run_mode(4) :-
     write('\nMode 4\n').    
