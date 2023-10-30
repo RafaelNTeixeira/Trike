@@ -5,19 +5,6 @@
 
 /* -------------------------------------------------------------- */
 
-% Custom predicate to flatten a nested list.
-custom_flatten([], []).
-custom_flatten([Head|Rest], FlatList) :-
-    is_list(Head),
-    custom_flatten(Head, FlatHead),
-    custom_flatten(Rest, FlatRest),
-    append(FlatHead, FlatRest, FlatList).
-custom_flatten([Head|Rest], [Head|FlatRest]) :-
-    \+ is_list(Head),
-    custom_flatten(Rest, FlatRest).
-
-/* -------------------------------------------------------------- */
-
 % [[b],[0, 0],[0, p, 0],[0, p, 0, 0],[p, 0, b, 0, b],[0, p, 0, b, 0, p],[0, 0, 0, 0, 0, 0, p],[w, p, w, 0, 0, p],[0, 0, w, p, 0],[0, p, p, 0],[0, p, 0],[0, p],[p]]
 
 % Define the game board.
@@ -36,6 +23,86 @@ board([[b],
        [0, p],
        [p]]).
 */
+/* -------------------------------------------------------------- */
+
+random_choice_pie_rule_bot(Choice) :-
+    random(1, 3, Choice).
+
+/* -------------------------------------------------------------- */
+pie_rule_bot([Player|Board], PlayerPos, [CurPlayer|NewBoard]) :-
+    display_game_pie_rule(Board),
+    write('Player 1\'s turn:'), nl, nl,
+    write('Player '), write(Player), write(', choose an X starting point:'),
+    read(PointX),
+    write('Player '), write(Player), write(', now choose an Y starting point: '),
+    read(PointY),
+    (is_empty(Board, PointX, PointY) ->
+        replace(Board, PointX, PointY, Player, TempBoard), % Player = b
+        nl, nl,
+        write('Player 1\'s play:\n'),
+        display_game_pie_rule(TempBoard),
+        write('Player Whites, do you want to switch colors?\n'),
+        write('1. Yes'), nl, write('2. No'), nl,
+        random_choice_pie_rule_bot(Choice),
+        write('Player Whites choose: '), write(Choice), nl,
+        CurPlayer = w,
+        write('\nPlayer 2\'s play:\n'),
+        update_board_first_play(TempBoard, Player, PointX, PointY, NewBoard),
+        (Choice =:= 1 -> 
+            write('\nPlayer 1 is now playing with the white pieces\n'),
+            write('Player 2 is now playing with the black pieces\n'), nl; true),
+        PlayerPos = [PointX, PointY];
+        write('Invalid choice. Try again.\n'),
+        pie_rule_bot([Player|Board], PlayerPos, [CurPlayer|NewBoard])
+    ).
+
+/* -------------------------------------------------------------- */
+
+gameplay_bot([Player|Board], PlayerPos, Level, FinalScore, Winner) :-
+    valid_moves([Player|Board], PlayerPos, ListOfMoves),
+    (game_over([Player|ListOfMoves]) ->
+        (Player = b  ->
+            write('Player '), write(Player), write(', choose an X starting point:'),
+            read(PointX),
+            write('Player '), write(Player), write(', now choose a Y starting point: '),
+            read(PointY),
+            Move = [PointX, PointY],
+            move([Player|ListOfMoves], Move, [NewPlayer|NewBoard]),
+            gameplay_bot([NewPlayer|NewBoard], Move, Level, FinalScore, Winner)
+        ;
+            choose_move([Player|ListOfMoves], Level, Move),
+            move([Player|ListOfMoves], Move, [NewPlayer|NewBoard]),
+            gameplay_bot([NewPlayer|NewBoard], Move, Level, FinalScore, Winner)
+        )
+    ;
+    calculate_final_score([Player|Board], PlayerPos, FinalScore, Winner)
+    ).
+
+/* -------------------------------------------------------------- */
+
+move_bot([Player|Board], [PointX, PointY], [NewPlayer|NewBoard]) :- 
+    (check_if_valid(Board, PointX, PointY) ->
+        replace(Board, PointX, PointY, Player, TempBoard),
+        clean_playables(TempBoard, NewBoard),
+        switch_player(NewPlayer, Player),
+        display_game([NewPlayer|NewBoard]); % tem que ser display do board sem os ps
+        write('Invalid move. Try again.\n'),
+        write('Player '), write(Player), write(', choose an X starting point:'),
+        read(PointX),
+        write('Player '), write(Player), write(', now choose an Y starting point: '),
+        read(PointY),
+        Move = [PointX, PointY],
+        move(Board, Move, NewBoard)
+    ).
+
+/* -------------------------------------------------------------- */
+choose_move([Player|Board], Level, [PointX, PointY]) :-
+    ((Level = 2) -> choose_random_p(Board, PointX, PointY);
+        find_p_with_more_w_and_b(Board, PointX, PointY)
+    ).
+
+
+/* -------------------------------------------------------------- */
 /*
 Bot Easy
 Vai jogar numa posição random.
@@ -65,6 +132,9 @@ choose_random_p(Board, PRow, PCol) :-
     nth1(RandomIndex, Positions, RandomPRow-RandomPCol),
     PRow is RandomPRow - 1,
     PCol is RandomPCol - 1.
+
+/* -----------------------------------------------------------------*/
+
 
 /*
 Bot Hard

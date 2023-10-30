@@ -12,7 +12,11 @@ print_indication :-
     write('Player 2 starts with the white pieces\n'), nl.
 
 play_game_bot(Level) :-
-    initial_state(8,GameState).
+    initial_state(8,GameState),
+    print_indication,
+    pie_rule_bot(GameState, PlayerPos, NewGameState),
+    gameplay_bot(NewGameState, PlayerPos, Level, FinalScore, Winner),
+    report_winner(FinalScore, Winner).
 
 
 play_game :- 
