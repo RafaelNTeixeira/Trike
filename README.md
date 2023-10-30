@@ -251,10 +251,10 @@ The major difficulties encountered by us while making the project were creating 
 Regardless, the development of this game enriched our knowledge in prolog development and made us realize that it was important for us to confront such a different programming environment since it helped us understand how to approach complex problems and structure code in a more logical and rule-driven manner.
 
 #### Possible improvements
-If we had more time, we would like to:
+If we had more time, we would like to have:
 
-- Have implemented the choice of playing in different board sizes
-- Improving the algorithm for hard bot difficulty so that it could detect when the opponent could trap it's pieces and prevent it
+- Implemented the choice of playing in different board sizes
+- Improved the algorithm for hard bot difficulty so that it could detect when the opponent could trap it's pieces and prevent it
 
 ---
 
