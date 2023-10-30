@@ -124,11 +124,11 @@ The game menu is displayed like this:
     ___________________________
     SELECT YOUR OPTION!
 ```
-An option is picked by typing a number followed by a `dot` and pressing the `Enter` key. 
+An option is picked by typing a number followed by a `` and pressing the `Enter` key. 
 
 The first 4 options correspond to dynamic stages of the program and the last one to a static page.
 
-By picking the option 0 the following text is displayed:
+By picking the option `0` the following text is displayed:
 ```prolog
             _________  ______ ______ 
            /_  __/ _ \\/  _/ //_/ __/ 
@@ -224,7 +224,7 @@ choose_move([Player|Board], Level, [PointX, PointY]) :-
     ).
 ```
 If `Level` corresponds to `2`, the `choose_random_p(+Board, -PointX, -PointY)` predicate is called, picking a playable space, marked with `p`, randomly.
-Oherwise, the `find_p_with_more_w_and_b(+Board, -PointX, -PointY)` predicate is called, the algorithm of the hardest difficulty available on the game. 
+Oherwise, the `find_p_with_more_w_and_b(+Board, -PointX, -PointY)` predicate is called to run the algorithm with hardest difficulty available on the game.
 
 To make up a good strategy for an algorithm, after playing and studying the game Trike a bit, we realised that one of best possible moves to make was to place a piece right next to our lastly played piece so that we can always keep the maximum number of checkers around us since the winner is determined by that condition.
 With that, we decided to implement our hardest algorithm around that strategy, so the predicate `find_p_with_more_w_and_b(+Board, -PointX, -PointY)` does exactly what was mentioned before:
@@ -246,9 +246,15 @@ find_p_with_more_w_and_b(Board, Row, Col) :-
 
 ### Conclusions
 
-We are satisfied with the final result of this project, since at the start of the development of this game we felt pressed about how much time we had to finish it but thankfully we ended up completing all the functionalities that were planned, even if it took us a lot of time and work.
+We are satisfied with the final result of this project, since at the start of the development of this game we felt pressed about how much time we had to finish it but thankfully we ended up completing all the main functionalities that were planned, even if it took us a lot of time and work.
 The major difficulties encountered by us while making the project were creating an intuitive board in the SicStus terminal since we don't have many options for how to display it, the debugging of the code since it gets stressful in this programming language and the implementation of some predicates with higher complexity.
 Regardless, the development of this game enriched our knowledge in prolog development and made us realize that it was important for us to confront such a different programming environment since it helped us understand how to approach complex problems and structure code in a more logical and rule-driven manner.
+
+#### Possible improvements
+If we had more time, we would like to:
+
+- Have implemented the choice of playing in different board sizes
+- Improving the algorithm for hard bot difficulty so that it could detect when the opponent could trap it's pieces and prevent it
 
 ---
 
