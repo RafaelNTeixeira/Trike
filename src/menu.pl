@@ -37,12 +37,10 @@ run_mode(1) :-
 
 run_mode(2) :-
     play_game_bot(2),
-    write('\nMode 2\n'),
     menu.
 
 run_mode(3) :-
     play_game_bot(3),
-    write('\nMode 3\n'),
     menu.
 
 run_mode(4) :-

@@ -1,28 +1,3 @@
-:- use_module(library(lists)).
-:- use_module(library(random)).
-:- use_module(library(between)).
-
-
-/* -------------------------------------------------------------- */
-
-% [[b],[0, 0],[0, p, 0],[0, p, 0, 0],[p, 0, b, 0, b],[0, p, 0, b, 0, p],[0, 0, 0, 0, 0, 0, p],[w, p, w, 0, 0, p],[0, 0, w, p, 0],[0, p, p, 0],[0, p, 0],[0, p],[p]]
-
-% Define the game board.
-/*
-board([[b],
-       [0, 0],
-       [0, p, 0],
-       [0, p, 0, 0],
-       [p, 0, b, 0, b],
-       [0, p, 0, b, 0, p],
-       [0, 0, 0, 0, 0, 0, p],
-       [w, p, w, 0, 0, p],
-       [0, 0, w, p, 0],
-       [0, p, p, 0],
-       [0, p, 0],
-       [0, p],
-       [p]]).
-*/
 /* -------------------------------------------------------------- */
 
 random_choice_pie_rule_bot(Choice) :-
@@ -66,8 +41,8 @@ gameplay_bot([Player|Board], PlayerPos, Level, FinalScore, Winner) :-
             read(PointX),
             write('Player '), write(Player), write(', now choose a Y starting point: '),
             read(PointY),
-            Move = [PointX, PointY],
-            move([Player|ListOfMoves], Move, [NewPlayer|NewBoard]),
+            Move1 = [PointX, PointY],
+            move([Player|ListOfMoves], Move1, Move,[NewPlayer|NewBoard]),
             gameplay_bot([NewPlayer|NewBoard], Move, Level, FinalScore, Winner)
         ;
             choose_move([Player|ListOfMoves], Level, Move),
@@ -76,23 +51,6 @@ gameplay_bot([Player|Board], PlayerPos, Level, FinalScore, Winner) :-
         )
     ;
     calculate_final_score([Player|Board], PlayerPos, FinalScore, Winner)
-    ).
-
-/* -------------------------------------------------------------- */
-
-move_bot([Player|Board], [PointX, PointY], [NewPlayer|NewBoard]) :- 
-    (check_if_valid(Board, PointX, PointY) ->
-        replace(Board, PointX, PointY, Player, TempBoard),
-        clean_playables(TempBoard, NewBoard),
-        switch_player(NewPlayer, Player),
-        display_game([NewPlayer|NewBoard]); % tem que ser display do board sem os ps
-        write('Invalid move. Try again.\n'),
-        write('Player '), write(Player), write(', choose an X starting point:'),
-        read(PointX),
-        write('Player '), write(Player), write(', now choose an Y starting point: '),
-        read(PointY),
-        Move = [PointX, PointY],
-        move(Board, Move, NewBoard)
     ).
 
 /* -------------------------------------------------------------- */
@@ -160,13 +118,6 @@ get_row_p_coordinates([p|Rest], ColumnIndex, RowIndex, Acc, PList) :-
 get_row_p_coordinates([_|Rest], ColumnIndex, RowIndex, Acc, PList) :-
     NextColumnIndex is ColumnIndex + 1,
     get_row_p_coordinates(Rest, NextColumnIndex, RowIndex, Acc, PList).
-
-/* -------------------------------------------------------------- */
-
-print_p_coordinates([]).
-print_p_coordinates([(Row, Col)|Rest]) :-
-    format("p at (~d,~d)~n", [Row, Col]),
-    print_p_coordinates(Rest).
 
 /* -------------------------------------------------------------- */
 /* Função para saber quantos w ou b tem há volta de uma certa posição */

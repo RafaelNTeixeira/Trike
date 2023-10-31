@@ -35,8 +35,8 @@ gameplay([Player|Board], PlayerPos, FinalScore, Winner) :-
         read(PointX),
         write('Player '), write(Player), write(', now choose an Y starting point: '),
         read(PointY),
-        Move = ([PointX, PointY]),
-        move([Player|ListOfMoves], Move, [NewPlayer|NewBoard]), 
+        Move1 = ([PointX, PointY]),
+        move([Player|ListOfMoves], Move1, Move,[NewPlayer|NewBoard]), 
         gameplay([NewPlayer|NewBoard], Move, FinalScore, Winner);
 
         calculate_final_score([Player|Board], PlayerPos, FinalScore, Winner)
@@ -88,7 +88,6 @@ count_around_end(Board, Row, Col, Start, ListOfScores) :-
     count_around_end_diagonal3(Board, Row, Col, Temp6, Temp7),
     count_around_end_diagonal4(Board, Row, Col, Temp7, Temp8),
     count_around_end_under(Board, Row, Col, Temp8, ListOfScores).
-    % print_list(ListOfScores).
 
 count_around_end_up(Board, Row, Col, Start, ListOfScores) :-
     RowAbove is Row - 1,
@@ -246,14 +245,9 @@ max_in_list([Head | Tail], Max) :-
 % Predicate to find the maximum value in a list.
 find_max(List, Max) :-
     max_in_list(List, Max).
+
 /*------------------------------------------------------------------------------------*/
-/*
-calculate_final_score([Player|Board], Score) :-
-    write('here'), nl,
-    findall(Point, adjacent_or_under(Board, 0, 0, Player, Point), Points),
-    length(Points, Score). % guarda em score o tamanho de Points (peças que servem para pontuação)
-*/
-/*------------------------------------------------------------------------------------*/
+
 % Define a predicate to check if there is a 'p' in a list.
 contains_p([p|_]).
 contains_p([_|T]) :- contains_p(T).
@@ -263,31 +257,22 @@ check_board(Board) :-
     member(Row, Board),  % Get a row from the board.
     contains_p(Row).    % Check if the row contains 'p'.
 
-
-can_move(Board, X, Y) :- is_empty(Board, X, Y).
-can_move(Board, X, Y, Player) :- 
-    is_empty(Board, X, Y), 
-    checkers_around(Board, X, Y, Player, _).
-
-% Check if there are adjacent checkers of the same color.
-checkers_around(Board, X, Y, Player, Checkers) :-
-    findall(Point, adjacent_or_under(Board, X, Y, Player, Point), Checkers),
-    length(Checkers, Count),
-    Count >= 2. % There must be at least 2 adjacent checkers to make a move.
+/*------------------------------------------------------------------------------------*/
     
-move([Player|Board], [PointX, PointY], [NewPlayer|NewBoard]) :- 
+move([Player|Board], [PointX, PointY], [PointX1, PointY1], [NewPlayer|NewBoard]) :- 
     (check_if_valid(Board, PointX, PointY) ->
+        PointX1 = PointX,
+        PointY1 = PointY,
         replace(Board, PointX, PointY, Player, TempBoard),
         clean_playables(TempBoard, NewBoard),
         switch_player(NewPlayer, Player),
         display_game([NewPlayer|NewBoard]); % tem que ser display do board sem os ps
         write('Invalid move. Try again.\n'),
         write('Player '), write(Player), write(', choose an X starting point:'),
-        read(PointX),
+        read(PointX1),
         write('Player '), write(Player), write(', now choose an Y starting point: '),
-        read(PointY),
-        Move = [PointX, PointY],
-        move(Board, Move, NewBoard)
+        read(PointY1),
+        move([Player|Board], [PointX1, PointY1], [PointX2, PointY2], [NewPlayer|NewBoard])
     ).
 
 % Checks if a point is playable.
@@ -299,15 +284,6 @@ check_if_valid(Board, X, Y) :-
 update_board_first_play(Board, Player, PointX, PointY, NewBoard) :-
     replace(Board, PointX, PointY, Player, NewBoard),
     display_game_pie_rule(Board).
-
-update_board(Board, Player, PointX, PointY, NewBoard) :-
-    replace(Board, PointX, PointY, Player, TempBoard),
-    % print do board sem as jogaveis possiveis e com a nova peça inserida
-    display_game([Player|Board]),
-    % move_pawn(TempBoard, PointX, PointY, NewBoard, Opponent), % é preciso???
-    write('move_pawn\n'),
-    % display_game([Board|TempBoard]),
-    write('display_game\n').
 
 % Replace a cell in the board with a new value.
 replace([Row | Rest], 0, Y, NewValue, [NewRow | Rest]) :-
@@ -323,33 +299,6 @@ replace_in_row([Value | Rest], X, Y, NewValue, [Value | NewRest]) :-
     Y > 0,
     Y1 is Y - 1,
     replace_in_row(Rest, X, Y1, NewValue, NewRest).
-
-move_pawn(Board, PointX, PointY, NewBoard, Opponent) :-
-    replace(Board, PointX, PointY, neutral, TempBoard),
-    write('X position to place your piece: '),
-    read(NewY), 
-    write('Y position to place your piece: '),
-    read(NewX),
-    (can_move_pawn(TempBoard, PointX, PointY, NewX, NewY) ->
-        write('can move pawn\n'),
-        replace(TempBoard, NewX, NewY, neutral, NewBoard),
-        write('can replace pawn\n');
-        write('Invalid pawn move. Try again.\n'),
-        move_pawn(Board, PointX, PointY, NewBoard, Opponent)
-    ).
-
-% Check if the pawn can move to a new location.
-can_move_pawn(Board, X, Y, NewX, NewY) :-  
-    is_empty(Board, NewX, NewY),
-    (X =:= NewX ; Y =:= NewY ; abs(X - NewX) =:= abs(Y - NewY)),
-    \+ jump_over_checkers(Board, X, Y, NewX, NewY).
-
-% Check if the pawn can jump over checkers.
-jump_over_checkers(_, X, Y, X, Y).
-jump_over_checkers(Board, X, Y, NewX, NewY) :-
-    (X =:= NewX, Y < NewY - 1, Y1 is Y + 1 ; Y =:= NewY, X < NewX - 1, X1 is X + 1 ; X < NewX - 1, Y < NewY - 1, X1 is X + 1, Y1 is Y + 1),
-    is_empty(Board, X1, Y1),
-    jump_over_checkers(Board, X1, Y1, NewX, NewY).
 
 pie_rule([Player|Board], PlayerPos, [CurPlayer|NewBoard]) :-
     display_game_pie_rule(Board),
@@ -393,53 +342,6 @@ is_inside(Board, X, Y) :-
     Y >= 0,
     Y < Cols.
 
-/*
-checkificanplay(GameState, Row, Column) :- 
-    Row1 is Row - 48, % 0 is 48.
-    Column1 is Column - 97, % a is 97.
-    get_element_at_index(GameState, Row, RowList),
-    get_element_at_index(RowList, Column, Elem),
-    is_zero(Elem).
-*/
-
-/*
-chooseposition(GameState, Row, Column) :-
-    repeat,
-    write("Choose the starting position."),
-    write("Choose Row (The row between 1 - 8): "),
-    read(Row),
-    write("Choose Column (The column between a - o): "),
-    read(Column),
-    checkificanplay(GameState, Row, Column).
-*/
-
-adjacent_or_under(Board, X, Y, Player, Point) :-
-    adjacent(Board, X, Y, Player, Point).
-adjacent_or_under(Board, X, Y, Player, Point) :-
-    under(Board, X, Y, Player, Point).
-
-% Check if a point is adjacent to the given player checker.
-adjacent(Board, X, Y, Player, Point) :- % pode n estar correto as coordenadas. Objetivo é verificar numa row se tem lá o símbolo do player e guardar esse ponto
-    is_adjacent(X, Y, AdjX, AdjY),
-    is_inside(Board, AdjX, AdjY),
-    nth0(AdjX, Board, Row),
-    nth0(AdjY, Row, Player),
-    Point = [AdjX, AdjY].
-
-is_adjacent(X1, Y1, X2, Y2) :-
-    (X1 =:= X2, Y1 =:= Y2 - 1) ;
-    (X1 =:= X2, Y1 =:= Y2 + 1) ;
-    (X1 =:= X2 - 1, Y1 =:= Y2) ;
-    (X1 =:= X2 + 1, Y1 =:= Y2).
-
-% Check if a point is under the given player checker.
-under(Board, X, Y, Player, Point) :- % pode n estar correto. Objetivo é verificar se em rows em baixo encontra-se uma peça do player especificado
-    X1 is X + 1,
-    is_inside(Board, X1, Y),
-    nth0(X1, Board, Row),
-    nth0(Y, Row, Player),
-    Point = [X1, Y].
-
 % Report the winner of the game.
 report_winner(Score, Winner) :-
     (Winner \= t ->
@@ -452,26 +354,6 @@ report_winner(Score, Winner) :-
     ).
 
 % ----------------------------------------------------------------------------------------------------------------------------
-/*
-[
-    [0],
-    [0,0],
-    [0,0,0],
-    [0,0,0,0],
-    [0,0,0,0,0],
-    [0,0,0,0,0,0],
-    [0,0,0,0,0,0,0],
-    [0,0,0,0,0,0],
-    [0,0,0,0,0], 
-    [0,0,0,0],
-    [0,0,0],
-    [0,0],
-    [0]
-]
-
-[[b],[0, 0],[0, p, 0],[0, p, 0, 0],[p, 0, b, 0, b],[0, p, 0, b, 0, p],[0, 0, 0, 0, 0, 0, p],[w, p, w, 0, 0, p],[0, 0, w, p, 0],[0, p, p, 0],[0, p, 0],[0, p],[p]]
-
-*/
 
 /*------------------------------------------------------------------------------------*/
 print_list([]).
@@ -501,12 +383,6 @@ custom_nth1(Index, [_|Rest], Element) :-
     Index > 0,
     NextIndex is Index - 1,
     custom_nth1(NextIndex, Rest, Element).
-
-/*------------------------------------------------------------------------------------*/
-
-elem_belongs_to_both(Elem) :-
-    Elem = b,
-    Elem = w.
 
 /*------------------------------------------------------------------------------------*/
 % Swap 0 with p in all directions from X
@@ -700,9 +576,5 @@ replace_p_in_row([p|Rest], [0|NewRest]) :-
 replace_p_in_row([X|Rest], [X|NewRest]) :-
     X \= p,
     replace_p_in_row(Rest, NewRest).
-    
-% Example usage:
-% Define the initial board
-% [[0],[0, 0],[0, b, 0],[0, 0, w, 0],[w, 0, 0, 0, 0],[0, w, 0, 0, 0, 0],[0, w, b, b, w, 0, 0],[0, b, w, w, 0, 0],[0, b, 0, 0, 0],[0, w, w, b],[0, 0, 0],[0, b],[b]]
 
 % ---------------------------------------------------------------------------------------------------

@@ -44,20 +44,12 @@ display_rows([Row | Rest], N) :-
 display_row([], _).
 display_row([Cell | Rest], N) :-
     write(' '),
-    write(Cell),
+    ((Cell = 0) -> write('.');
+        (Cell = p) -> write('x');
+            (Cell = b) -> write('B');
+                (Cell = w) -> write('W');
+        write(Cell)
+    ),
     write(' |'),
     display_row(Rest, N).
 
-print_padding(N) :-
-    N > 0,
-    write(' '),
-    NextN is N - 1,
-    print_padding(NextN).
-print_padding(0).
-
-identity(0, I) :- I = ' '.   % Empty space
-identity(w, I) :- I = 'W'.   % White checker
-identity(b, I) :- I = 'B'.   % Black checker
-identity(p_w, I) :- I = 'w'. % Pinned white checker
-identity(p_b, I) :- I = 'b'. % Pinned black checker
-identity(x, I) :- I = 'X'.   % Non playable space
