@@ -24,10 +24,10 @@ If using Windows, we can click on the options `File` -> `Consult` -> select the 
 
 -  `Game Board:` Trike is played on an equilateral triangular hexagon-tessellated grid but since there isn't a good way to represent it in code language we had to opt out for a pyramid grid.
 - `Number of Players:` The game is played by 2 players who choose which colour they want to play with, black or white.
-- `Game Components:` The game employs a pinned checker (the current last placed checker) either black or white whether it was the player playing with black or white checkers who placed it (represented as `b` or `w`, respectively) and black/white checkers to represent the two players (represented as `B` and `W`, respectively).
+- `Game Components:` Black/white checkers are used to represent the two players (represented as `B` and `W`, respectively). The last checker (pinned checker) is used to determine the following possible moves, vertically, horizontally and diagonally until a piece or the end of the board is found.
 - `Game Objective:` The primary objective is to trap the pinned checker, and at the end of the game, accumulate as many points as possible.
 - `Movement:` Players take turns moving the pinned checker around the board. Passing is not allowed. The pawn can move any number of empty points in a straight line, in any direction, but cannot land on or jump over occupied points.
-- `Game Progression:` When a player moves the pawn, they must first place a checker of their own colour onto the destination point and then move the pawn on top of it.
+- `Game Progression:` When a player moves the piece, they must first place a checker of their own colour onto the destination point and then move the pawn on top of it.
 - `Winning:` The game ends when the pawn becomes trapped. The player with the most points wins.
 - `Scoring:` At the game's conclusion, each player scores one point for every checker of their own colour that is adjacent to or underneath the pawn.
 - `Pie Rule:` Before the game begins, the first player selects a colour and places a checker on any point of the board, with the pawn on top. At this point, the second player has a one-time opportunity to switch sides rather than make a regular move.
@@ -153,7 +153,7 @@ Also, everytime someone plays, the board is updated to show every move that is p
 ---
 
 ### Move Validation and Execution
-The `move(+GameState, +Move, -NewGameState)` predicate takes the current game state, the move to take and the new game state resulting from that move. 
+The `move(+GameState, +Move, -NewMove, -NewGameState)` predicate takes the current game state, the move to take, the new move in case an incorrect one was given and the new game state resulting from that move. 
 
 Inside that function, we use the predicate `check_if_valid(+Board, +X, +Y)` to check if the move to take is inside the board and if it corresponds to a valid move:
 
