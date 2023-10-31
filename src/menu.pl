@@ -44,7 +44,8 @@ run_mode(3) :-
     menu.
 
 run_mode(4) :-
-    write('\nMode 4\n').    
+    play_bot_vs_bot,
+    menu.    
 
 run_mode(5) :-
     nl, nl,

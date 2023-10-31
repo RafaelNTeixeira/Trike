@@ -46,7 +46,7 @@ gameplay_bot([Player|Board], PlayerPos, Level, FinalScore, Winner) :-
             gameplay_bot([NewPlayer|NewBoard], Move, Level, FinalScore, Winner)
         ;
             choose_move([Player|ListOfMoves], Level, Move),
-            move([Player|ListOfMoves], Move, [NewPlayer|NewBoard]),
+            move_bot([Player|ListOfMoves], Move, [NewPlayer|NewBoard]),
             gameplay_bot([NewPlayer|NewBoard], Move, Level, FinalScore, Winner)
         )
     ;
@@ -59,6 +59,64 @@ choose_move([Player|Board], Level, [PointX, PointY]) :-
         find_p_with_more_w_and_b(Board, PointX, PointY)
     ).
 
+/* -------------------------------------------------------------- */
+
+pie_rule_bot_vs_bot([Player|Board], PlayerPos, [CurPlayer|NewBoard]) :-
+    display_game_pie_rule(Board),
+    choose_random_zero(Board, PointX, PointY),
+    replace(Board, PointX, PointY, Player, TempBoard), 
+    nl, nl,
+    write('Player 1\'s play:\n'),
+    display_game_pie_rule(TempBoard),
+    write('Player Whites, do you want to switch colors?\n'),
+    write('1. Yes'), nl, write('2. No'), nl,
+    random_choice_pie_rule_bot(Choice),
+    write('Player Whites choose: '), write(Choice), nl,
+    CurPlayer = w,
+    write('\nPlayer 2\'s play:\n'),
+    update_board_first_play(TempBoard, Player, PointX, PointY, NewBoard),
+    (Choice =:= 1 -> 
+        write('\nPlayer 1 is now playing with the white pieces\n'),
+        write('Player 2 is now playing with the black pieces\n'), nl; true),
+    PlayerPos = [PointX, PointY].
+
+/* -------------------------------------------------------------- */
+
+choose_random_zero(Board, Row, Col) :-
+    custom_flatten(Board, FlatBoard),
+    findall(Row-Col, (nth1(Position, FlatBoard, 0), nth1(Row, Board, RowList), nth1(Col, RowList, 0), Position > 0), Positions),
+    length(Positions, NumPositions),
+    random(1, NumPositions, RandomIndex),
+    nth1(RandomIndex, Positions, RandomRow-RandomCol),
+    PRow is RandomRow - 1,
+    PCol is RandomCol - 1.
+
+
+/* -------------------------------------------------------------- */
+
+gameplay_bot_vs_bot([Player|Board], PlayerPos, FinalScore, Winner) :-
+    valid_moves([Player|Board], PlayerPos, ListOfMoves),
+    (game_over([Player|ListOfMoves]) ->
+        (Player = b  ->
+            choose_move([Player|ListOfMoves], 3, Move),
+            move_bot([Player|ListOfMoves], Move, [NewPlayer|NewBoard]),
+            gameplay_bot_vs_bot([NewPlayer|NewBoard], Move, FinalScore, Winner)
+        ;
+            choose_move([Player|ListOfMoves], 2, Move),
+            move_bot([Player|ListOfMoves], Move, [NewPlayer|NewBoard]),
+            gameplay_bot_vs_bot([NewPlayer|NewBoard], Move, FinalScore, Winner)
+        )
+    ;
+    calculate_final_score([Player|Board], PlayerPos, FinalScore, Winner)
+    ).
+
+/* -------------------------------------------------------------- */
+
+move_bot([Player|Board], [PointX, PointY], [NewPlayer|NewBoard]) :-
+    replace(Board, PointX, PointY, Player, TempBoard),
+    clean_playables(TempBoard, NewBoard),
+    switch_player(NewPlayer, Player),
+    display_game([NewPlayer|NewBoard]).
 
 /* -------------------------------------------------------------- */
 /*

@@ -11,6 +11,13 @@ print_indication :-
     write('\nPlayer 1 starts with the black pieces\n'),
     write('Player 2 starts with the white pieces\n'), nl.
 
+play_bot_vs_bot :-
+    initial_state(8,GameState),
+    print_indication,
+    pie_rule_bot_vs_bot(GameState, PlayerPos, NewGameState),
+    gameplay_bot_vs_bot(NewGameState, PlayerPos, FinalScore, Winner),
+    report_winner(FinalScore, Winner).
+
 play_game_bot(Level) :-
     initial_state(8,GameState),
     print_indication,
@@ -24,9 +31,7 @@ play_game :-
     print_indication,
     pie_rule(GameState, PlayerPos, NewGameState),
     gameplay(NewGameState, PlayerPos, FinalScore, Winner), % play_game
-    write('gameplay\n'),
-    report_winner(FinalScore, Winner),
-    write('report_winner\n').
+    report_winner(FinalScore, Winner).
 
 gameplay([Player|Board], PlayerPos, FinalScore, Winner) :-
     valid_moves([Player|Board], PlayerPos, ListOfMoves),
@@ -345,7 +350,7 @@ is_inside(Board, X, Y) :-
 % Report the winner of the game.
 report_winner(Score, Winner) :-
     (Winner \= t ->
-        write('Player '), write(Winner), write('is the winner!!!\n'),
+        write('Player '), write(Winner), write(' is the winner!!!\n'),
         write('Player with the most adjacent or under checkers wins.\n'),
         write('Player with '),
         write(Score),
