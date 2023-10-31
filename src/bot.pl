@@ -42,7 +42,7 @@ gameplay_bot([Player|Board], PlayerPos, Level, FinalScore, Winner) :-
             write('Player '), write(Player), write(', now choose a Y starting point: '),
             read(PointY),
             Move1 = [PointX, PointY],
-            move([Player|ListOfMoves], Move1, Move,[NewPlayer|NewBoard]),
+            move([Player|ListOfMoves], Move1, Move, [NewPlayer|NewBoard]),
             gameplay_bot([NewPlayer|NewBoard], Move, Level, FinalScore, Winner)
         ;
             choose_move([Player|ListOfMoves], Level, Move),
@@ -307,8 +307,8 @@ print_degub([(Row, Col)|Rest], [H|T]):-
 
 /* -------------------------------------------------------------- */
 /* Função para dizer qual é o p com mais w e b há volta */
-% find_p_with_more_w_and_b(+Board, -Row, -Col)
-find_p_with_more_w_and_b(Board, Row, Col) :-
+% find_p_with_more_w_and_b(+Board, +Player, -Row, -Col)
+find_p_with_more_w_and_b(Board, Player, Row, Col) :-
     get_p_coordinates(Board, PList),
     process_elements(PList, Board, Results),
     print_degub(PList, Results), nl,
