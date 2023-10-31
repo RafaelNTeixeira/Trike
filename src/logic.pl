@@ -52,15 +52,17 @@ game_over([Player|ListOfMoves]) :-
 
 valid_moves([CurPlayer|Board], [PlayerX, PlayerY], ListOfMoves) :-
     swap(PlayerX, PlayerY, Board, ListOfMoves),
+    write('Valid Moves'), nl,
     display_game([CurPlayer|ListOfMoves]).
     
 calculate_final_score([Player|Board], [PlayerX, PlayerY], Score, Winner) :-
     count_around_end(Board, PlayerX, PlayerY, [0,0], ListOfScores),
-    find_max(ListOfScores, Score),
+    format('(~d,~d)', [PlayerX, PlayerY]), nl,
+    max_in_list(ListOfScores, Score),
     find_max_position(ListOfScores, Res),
-    ((Res = 0) -> Winner = w;
-        (Res = 1) -> Winner = b;
-            Winner = t   
+    ((Score = 0) -> Winner = t;
+        (Res = 0) -> Winner = w;
+        (Res = 1) -> Winner = b  
     ).
 
 
@@ -174,7 +176,7 @@ count_around_end_diagonal3(Board, Row, Col, Start, ListOfScores) :-
         (ColRight > Len1) -> ListOfScores = Start;
             custom_nth1(ColRight, RowAboveList, Elem),
             ((Elem = w) -> increment_first(Start, ListOfScores);
-                (Elem = b) -> increment_second(Start, ListOfScores);
+                (Elem = b) -> increment_first(Start, ListOfScores);
                     ListOfScores = Start
             )
     ).
@@ -229,7 +231,20 @@ max_position([Head | Tail], MaxPosition) :-
 find_max_position(List, MaxPosition) :-
     max_position(List, MaxPosition).
 
-/* -------------------------------------------------------------- */
+/*------------------------------------------------------------------------------------*/
+
+max_or_zero(X, Y, Max) :-
+    (X > Y, Max is X);
+    (Y > X, Max is Y);
+    (X =:= Y, Max is 0).
+
+max_in_list([X], X).
+max_in_list([X, Y | Rest], Max) :-
+    max_or_zero(X, Y, TempMax),
+    max_in_list([TempMax | Rest], Max).
+
+/*------------------------------------------------------------------------------------*/
+
 % Base case: If the list contains only one element, the maximum is that element.
 max_in_list([X], X) :- !.
 
@@ -271,6 +286,7 @@ move([Player|Board], [PointX, PointY], [PointX1, PointY1], [NewPlayer|NewBoard])
         replace(Board, PointX, PointY, Player, TempBoard),
         clean_playables(TempBoard, NewBoard),
         switch_player(NewPlayer, Player),
+        write('Move'), nl,
         display_game([NewPlayer|NewBoard]); % tem que ser display do board sem os ps
         write('Invalid move. Try again.\n'),
         write('Player '), write(Player), write(', choose an X starting point:'),
@@ -350,12 +366,11 @@ is_inside(Board, X, Y) :-
 % Report the winner of the game.
 report_winner(Score, Winner) :-
     (Winner \= t ->
-        write('Player '), write(Winner), write(' is the winner!!!\n'),
-        write('Player with the most adjacent or under checkers wins.\n'),
-        write('Player with '),
-        write(Score),
-        write(' points wins the game.\n');
-        write('It\'s a draw! No one wins.')
+        write('Player '), write(Winner), write(' is the WINNER!!!\n'),
+        write('He scored '), write(Score), write(' points wins the game.\n')
+        ;
+        write('It\'s a draw! No one wins.\n'),
+        write('Both players scored the same amount of points in the game.\n')
     ).
 
 % ----------------------------------------------------------------------------------------------------------------------------

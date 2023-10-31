@@ -36,7 +36,7 @@ pie_rule_bot([Player|Board], PlayerPos, [CurPlayer|NewBoard]) :-
 gameplay_bot([Player|Board], PlayerPos, Level, FinalScore, Winner) :-
     valid_moves([Player|Board], PlayerPos, ListOfMoves),
     (game_over([Player|ListOfMoves]) ->
-        (Player = b  ->
+        ((Player = b)  ->
             write('Player '), write(Player), write(', choose an X starting point:'),
             read(PointX),
             write('Player '), write(Player), write(', now choose a Y starting point: '),
@@ -116,6 +116,7 @@ move_bot([Player|Board], [PointX, PointY], [NewPlayer|NewBoard]) :-
     replace(Board, PointX, PointY, Player, TempBoard),
     clean_playables(TempBoard, NewBoard),
     switch_player(NewPlayer, Player),
+    write('Move Bot'), nl,
     display_game([NewPlayer|NewBoard]).
 
 /* -------------------------------------------------------------- */
@@ -291,11 +292,26 @@ process_elements([(Row, Col)|Rest], Board, [Result|Results]) :-
 
 
 /* -------------------------------------------------------------- */
+
+print_p_coordinates([]).
+print_p_coordinates([(Row, Col)|Rest]) :-
+    format("(~d,~d), ", [Row, Col]),
+    print_p_coordinates(Rest).
+
+/* -------------------------------------------------------------- */
+
+print_degub([], []).
+print_degub([(Row, Col)|Rest], [H|T]):-
+    format("(~d,~d): ~d, ", [Row, Col, H]), 
+    print_degub(Rest, T).
+
+/* -------------------------------------------------------------- */
 /* Função para dizer qual é o p com mais w e b há volta */
 % find_p_with_more_w_and_b(+Board, -Row, -Col)
 find_p_with_more_w_and_b(Board, Row, Col) :-
     get_p_coordinates(Board, PList),
     process_elements(PList, Board, Results),
+    print_degub(PList, Results), nl,
     find_max_position(Results, Pos),
     custom_nth1(Pos, PList, (Row, Col)).
 
