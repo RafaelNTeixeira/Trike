@@ -67,7 +67,7 @@ gameplay_bot([Player|Board], PlayerPos, Level, FinalScore, Winner) :-
 % Após percorrer o algoritmo, uma jogada é decidida.
 choose_move([Player|Board], Level, [PointX, PointY]) :-
     ((Level = 2) -> choose_random_p(Board, PointX, PointY);
-        find_p_with_more_w_and_b(Board, Player, PointX, PointY)
+        choose_move_hard(Board, PointX, PointY)
     ).
 
 /* -------------------------------------------------------------- */
@@ -116,7 +116,7 @@ gameplay_bot_vs_bot([Player|Board], PlayerPos, FinalScore, Winner) :-
     valid_moves([Player|Board], PlayerPos, ListOfMoves),
     (game_over([Player|ListOfMoves]) ->
         (Player = b  ->
-            choose_move([Player|ListOfMoves], 3, Move),
+            choose_move([Player|ListOfMoves], 2, Move),
             move_bot([Player|ListOfMoves], Move, [NewPlayer|NewBoard]),
             gameplay_bot_vs_bot([NewPlayer|NewBoard], Move, FinalScore, Winner)
         ;
@@ -312,14 +312,15 @@ count_diagnal3_p(Row, Col, Board, Player, Count, Res) :-
 count_diagnal4_p(Row, Col, Board, Player, Count, Res) :-
     RowBelow is Row + 1,
     ColRight is Col + 1,
-    custom_nth1(RowBelow, Board, RowBelowList),
-    length(RowBelowList, Len),
-    Len1 is Len - 1,
-    ((RowBelow > 12 ; ColRight > Len1) -> Res = Count;
-        custom_nth1(ColRight, RowBelowList, Elem),
-        ((Elem = Player) -> Res is Count + 1;
-            Res = Count
-        )
+    ((RowBelow > 12) -> Res = Count;
+        custom_nth1(RowBelow, Board, RowBelowList),
+        length(RowBelowList, Len),
+        Len1 is Len - 1,
+        (ColRight > Len1) -> Res = Count;
+            custom_nth1(ColRight, RowBelowList, Elem),
+            ((Elem = Player) -> Res is Count + 1;
+                Res = Count
+            )
     ).
 
 /* -------------------------------------------------------------- */
@@ -349,9 +350,13 @@ print_degub([(Row, Col)|Rest], [H|T]):-
 % find_p_with_more_w_and_b(+Board, +Player, -Row, -Col)
 find_p_with_more_w_and_b(Board, Player, Row, Col) :-
     get_p_coordinates(Board, PList),
+    print_coordinates(PList), nl,
     process_elements(PList, Board, Results),
-    print_degub(PList, Results), nl,
+    % print_degub(PList, Results), nl,
     find_max_position(Results, Pos),
     custom_nth1(Pos, Positions, (Row, Col)).
 
-
+/* -------------------------------------------------------------- */
+choose_move_hard(Board, Row, Col) :-
+    get_p_coordinates(Board, PList),
+    custom_nth1(0, PList, (Row, Col)).

@@ -51,9 +51,9 @@ gameplay([Player|Board], PlayerPos, FinalScore, Winner) :-
         read(PointX),
         write('Player '), write(Player), write(', now choose an Y starting point: '),
         read(PointY),
-        Move1 = ([PointX, PointY]),
-        move([Player|ListOfMoves], Move1, Move,[NewPlayer|NewBoard]), 
-        gameplay([NewPlayer|NewBoard], Move, FinalScore, Winner);
+        Move = ([PointX, PointY]),
+        move([Player|ListOfMoves], Move, NewMove,[NewPlayer|NewBoard]),
+        gameplay([NewPlayer|NewBoard], NewMove, FinalScore, Winner);
 
         calculate_final_score([Player|Board], PlayerPos, FinalScore, Winner)
     ).
@@ -74,7 +74,7 @@ valid_moves([CurPlayer|Board], [PlayerX, PlayerY], ListOfMoves) :-
 % identifica o vencedor e  calcula a pontuação total obtida por esse jogador.
 calculate_final_score([Player|Board], [PlayerX, PlayerY], Score, Winner) :-
     count_around_end(Board, PlayerX, PlayerY, [0,0], ListOfScores),
-    % format('(~d,~d)', [PlayerX, PlayerY]), nl,
+    format('Final Position: (~d,~d)', [PlayerX, PlayerY]), nl,
     max_in_list(ListOfScores, Score),
     find_max_position(ListOfScores, Res),
     ((Score = 0) -> Winner = t;
@@ -351,10 +351,10 @@ move([Player|Board], [PointX, PointY], [PointX1, PointY1], [NewPlayer|NewBoard])
         display_game([NewPlayer|NewBoard]); % tem que ser display do board sem os ps
         write('Invalid move. Try again.\n'),
         write('Player '), write(Player), write(', choose an X starting point:'),
-        read(PointX1),
+        read(PointX2),
         write('Player '), write(Player), write(', now choose an Y starting point: '),
-        read(PointY1),
-        move([Player|Board], [PointX1, PointY1], [PointX2, PointY2], [NewPlayer|NewBoard])
+        read(PointY2),
+        move([Player|Board], [PointX2, PointY2], [PointX1, PointY1], [NewPlayer|NewBoard])
     ).
 
 % Checks if a point is playable.
