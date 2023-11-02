@@ -42,7 +42,7 @@ gameplay_bot([Player|Board], PlayerPos, Level, FinalScore, Winner) :-
             write('Player '), write(Player), write(', now choose a Y starting point: '),
             read(PointY),
             Move1 = [PointX, PointY],
-            move([Player|ListOfMoves], Move1, Move, [NewPlayer|NewBoard]),
+            move([Player|ListOfMoves], Move1, Move,[NewPlayer|NewBoard]),
             gameplay_bot([NewPlayer|NewBoard], Move, Level, FinalScore, Winner)
         ;
             choose_move([Player|ListOfMoves], Level, Move),
@@ -159,26 +159,36 @@ Vai jogar sempre na posição onde tem mais peças há volta.
 */
 
 /* -------------------------------------------------------------- */
-% Predicate to get the coordinates of all 'p' positions in the board.
-get_p_coordinates(Board, PList) :-
-    get_p_coordinates(Board, 0, [], PList).
+% Predicate to find and return a list of coordinates (Row, Col) of 'p' in a board
+find_p_positions(Board, Positions) :- find_p_positions(Board, 0, [], Positions).
 
-get_p_coordinates([], _, PList, PList).
-get_p_coordinates([Row|Rest], RowIndex, Acc, PList) :-
-    get_row_p_coordinates(Row, 0, RowIndex, Acc, NewAcc),
-    NextRowIndex is RowIndex + 1,
-    get_p_coordinates(Rest, NextRowIndex, NewAcc, PList).
+% Base case: when we have processed the entire board, return the list of positions
+find_p_positions([], _, Positions, Positions).
 
-get_row_p_coordinates([], _, _, Acc, Acc).
-get_row_p_coordinates([p|Rest], ColumnIndex, RowIndex, Acc, PList) :-
-    append(Acc, [(RowIndex, ColumnIndex)], NewAcc),
-    NextColumnIndex is ColumnIndex + 1,
-    get_row_p_coordinates(Rest, NextColumnIndex, RowIndex, NewAcc, PList).
-get_row_p_coordinates([_|Rest], ColumnIndex, RowIndex, Acc, PList) :-
-    NextColumnIndex is ColumnIndex + 1,
-    get_row_p_coordinates(Rest, NextColumnIndex, RowIndex, Acc, PList).
+% Recursive case: process each row of the board
+find_p_positions([Row|Rest], RowIndex, Acc, Positions) :-
+    process_row(Row, 0, RowIndex, Acc, NewAcc),
+    NewRowIndex is RowIndex + 1,
+    find_p_positions(Rest, NewRowIndex, NewAcc, Positions).
+
+% Helper predicate to process a single row and accumulate positions
+process_row([], _, _, Positions, Positions).
+
+process_row([p|Rest], ColIndex, RowIndex, Acc, Positions) :-
+    % If the current element is 'p', add its position as a tuple (Row, Col) to the accumulator
+    append(Acc, [(RowIndex, ColIndex)], NewAcc),
+    NewColIndex is ColIndex + 1,
+    process_row(Rest, NewColIndex, RowIndex, NewAcc, Positions).
+
+process_row([_|Rest], ColIndex, RowIndex, Acc, Positions) :-
+    % If the current element is not 'p', skip it
+    NewColIndex is ColIndex + 1,
+    process_row(Rest, NewColIndex, RowIndex, Acc, Positions).
+
+
 
 /* -------------------------------------------------------------- */
+
 /* Função para saber quantos w ou b tem há volta de uma certa posição */
 
 count_around_p(Row, Col, Board, Count, Res) :-
@@ -194,7 +204,7 @@ count_around_p(Row, Col, Board, Count, Res) :-
 
 count_up_p(Row, Col, Board, Count, Res) :-
     RowAbove is Row - 1,
-    ((RowAbove < 0) -> Res = Count;  % Check if RowAbove is less than 0
+    ((RowAbove < Col) -> Res = Count;  % Check if RowAbove is less than 0
         custom_nth1(RowAbove, Board, RowAboveList),
         custom_nth1(Col, RowAboveList, Elem),
         ((Elem = w ; Elem = b) -> Res is Count + 1;
@@ -204,7 +214,7 @@ count_up_p(Row, Col, Board, Count, Res) :-
 
 count_down_p(Row, Col, Board, Count, Res) :-
     RowBelow is Row + 1,
-    ((RowBelow > 12) -> Res = Count;
+    (((RowBelow + Col) > 12) -> Res = Count;
         custom_nth1(RowBelow, Board, RowBelowList),
         custom_nth1(Col, RowBelowList, Elem),
         ((Elem = w ; Elem = b) -> Res is Count + 1;
@@ -284,19 +294,20 @@ count_diagnal4_p(Row, Col, Board, Count, Res) :-
     ).
 
 /* -------------------------------------------------------------- */
+
 % Process each element in the list and store the results in a new list.
 process_elements([], _, []).
 process_elements([(Row, Col)|Rest], Board, [Result|Results]) :-
     count_around_p(Row, Col, Board, 0, Result),
     process_elements(Rest, Board, Results).
 
-
 /* -------------------------------------------------------------- */
 
-print_p_coordinates([]).
-print_p_coordinates([(Row, Col)|Rest]) :-
-    format("(~d,~d), ", [Row, Col]),
-    print_p_coordinates(Rest).
+% Predicate to print a list of coordinates (Row, Col)
+print_coordinates([]).
+print_coordinates([(Row, Col)|Rest]) :-
+    format(" 'p': (~d, ~d) ~n", [Row, Col]),
+    print_coordinates(Rest).
 
 /* -------------------------------------------------------------- */
 
@@ -307,13 +318,13 @@ print_degub([(Row, Col)|Rest], [H|T]):-
 
 /* -------------------------------------------------------------- */
 /* Função para dizer qual é o p com mais w e b há volta */
-% find_p_with_more_w_and_b(+Board, +Player, -Row, -Col)
-find_p_with_more_w_and_b(Board, Player, Row, Col) :-
-    get_p_coordinates(Board, PList),
-    process_elements(PList, Board, Results),
-    print_degub(PList, Results), nl,
+% find_p_with_more_w_and_b(+Board, -Row, -Col)
+find_p_with_more_w_and_b(Board, Row, Col) :-
+    % print_board(Board), nl,
+    find_p_positions(Board, Positions),
+    process_elements(Positions, Board, Results), 
+    % print_degub(Positions, Results), nl,
     find_max_position(Results, Pos),
-    custom_nth1(Pos, PList, (Row, Col)).
-
+    custom_nth1(Pos, Positions, (Row, Col)).
 
 
