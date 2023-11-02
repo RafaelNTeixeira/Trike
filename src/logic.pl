@@ -3,6 +3,8 @@ initial_player(b).
 switch_player(b, w).
 switch_player(w, b).
 
+% print_indication/0
+% Imprime na tela as indicações do tipo de jogadores que existem para mais fácil interpretação e com que peças começam o jogador 1 e 2.
 print_indication :-
     write('============================================'), nl,
     write('Player b = Player with the black pieces (b)'), nl,
@@ -11,6 +13,8 @@ print_indication :-
     write('\nPlayer 1 starts with the black pieces\n'),
     write('Player 2 starts with the white pieces\n'), nl.
 
+% play_bot_vs_bot/0
+% Predicado para iniciar o jogo no modo Bot Vs Bot.
 play_bot_vs_bot :-
     initial_state(8,GameState),
     print_indication,
@@ -18,6 +22,9 @@ play_bot_vs_bot :-
     gameplay_bot_vs_bot(NewGameState, PlayerPos, FinalScore, Winner),
     report_winner(FinalScore, Winner).
 
+% play_game_bot(+Level)
+% Predicado para iniciar o jogo no modo Player Vs Bot.
+% O argumento Level indica o tipo de dificuldade escolhido para o computador.
 play_game_bot(Level) :-
     initial_state(8,GameState),
     print_indication,
@@ -25,7 +32,8 @@ play_game_bot(Level) :-
     gameplay_bot(NewGameState, PlayerPos, Level, FinalScore, Winner),
     report_winner(FinalScore, Winner).
 
-
+% play_game/0
+% Predicado para iniciar o jogo no modo Player Vs Player.
 play_game :- 
     initial_state(8, GameState),
     print_indication,
@@ -33,6 +41,9 @@ play_game :-
     gameplay(NewGameState, PlayerPos, FinalScore, Winner), % play_game
     report_winner(FinalScore, Winner).
 
+% gameplay(+GameState, +PlayerPos, -FinalScore, -Winner)
+% Ciclo de jogo para o modo Player Vs Player.
+% Exibe as jogadas válidas e, a cada movimento de um jogador, o ciclo prossegue, a menos que o jogo tenha terminado. Se o jogo terminar, calcula o resultado final e identifica o vencedor.
 gameplay([Player|Board], PlayerPos, FinalScore, Winner) :-
     valid_moves([Player|Board], PlayerPos, ListOfMoves),
     ((game_over([Player|ListOfMoves]))-> 
@@ -47,14 +58,20 @@ gameplay([Player|Board], PlayerPos, FinalScore, Winner) :-
         calculate_final_score([Player|Board], PlayerPos, FinalScore, Winner)
     ).
 
+% game_over(+GameState)
+% Verifica se num board existem jogadas jogáveis.
 game_over([Player|ListOfMoves]) :-
     check_board(ListOfMoves).
 
+% valid_moves(+GameState, +PlayerPos, -ListOfMoves)
+% Determina e imprime as jogadas possíveis do momento no board.
 valid_moves([CurPlayer|Board], [PlayerX, PlayerY], ListOfMoves) :-
     swap(PlayerX, PlayerY, Board, ListOfMoves),
     write('Valid Moves'), nl,
     display_game([CurPlayer|ListOfMoves]).
-    
+
+% calculate_final_score(+GameState, +PlayerPos, -Score, -Winner)
+% identifica o vencedor e  calcula a pontuação total obtida por esse jogador.
 calculate_final_score([Player|Board], [PlayerX, PlayerY], Score, Winner) :-
     count_around_end(Board, PlayerX, PlayerY, [0,0], ListOfScores),
     format('(~d,~d)', [PlayerX, PlayerY]), nl,
@@ -67,24 +84,38 @@ calculate_final_score([Player|Board], [PlayerX, PlayerY], Score, Winner) :-
 
 
 /*------------------------------------------------------------------------------------*/
-
+% increment_first(+Start, +ListOfScores)
+% Recebe uma lista como entrada e aumenta o valor do primeiro elemento em 1.
 increment_first([OldFirst | Rest], [NewFirst | Rest]) :-
     NewFirst is OldFirst + 1.
 
+% increment_second(+List, +NewList)
+% Predicado principal para aumentar o valor do segundo elemento de uma lista
 increment_second(List, NewList) :-
     increment_second_helper(List, NewList, 0).
 
+
+% increment_second_helper(+List, +NewList, +Index)
+% Predicado auxiliar processa a cabeça da lista List (H) e o primeiro elemento da NewList (NewH). 
+% O predicado verifica se o Index é igual a 1, o que indica que estamos no segundo elemento da lista original. Se for o caso, aumenta o valor de H em 1 e coloca o resultado em NewH.
+% O Index é usado para rastrear a posição atual na lista.
 increment_second_helper([], [], _).
 increment_second_helper([H|T], [NewH|T], Index) :-
     Index =:= 1, % Check if the current index is 1 (the second element)
     NewH is H + 1.
+
+% increment_second_helper(+List, +NewList, +Index)
+% Predicado auxiliar lida com elementos que não são o segundo elemento da lista original. 
+% Mantém o elemento H inalterado e continua a processar o restante da lista. 
+% O Index é incrementado para acompanhar a posição atual
 increment_second_helper([H|T], [H|NewT], Index) :-
     Index \= 1, % Index is not 1, so keep the element as is
     NewIndex is Index + 1,
     increment_second_helper(T, NewT, NewIndex).
 
 /*------------------------------------------------------------------------------------*/
-
+% count_around_end(+Board, +Row, +Col, +Start, -ListOfScores)
+% Coordena a contagem dos pontos nas direções em redor de uma coordenada do board.
 count_around_end(Board, Row, Col, Start, ListOfScores) :-
     count_around_end_up(Board, Row, Col, Start, Temp1),
     count_around_end_down(Board, Row, Col, Temp1, Temp2),
@@ -96,6 +127,9 @@ count_around_end(Board, Row, Col, Start, ListOfScores) :-
     count_around_end_diagonal4(Board, Row, Col, Temp7, Temp8),
     count_around_end_under(Board, Row, Col, Temp8, ListOfScores).
 
+% count_around_end_up(+Board, +Row, +Col, +Start, -ListOfScores)
+% Conta pontos acima da posição fornecida (Row, Col) no board. 
+% Se a peça lida for `w` incrementa no primeiro elemento da lista Start mas se for `b` incrementa no segundo.
 count_around_end_up(Board, Row, Col, Start, ListOfScores) :-
     RowAbove is Row - 1,
     ((RowAbove < 0) -> ListOfScores = Start; 
@@ -107,6 +141,9 @@ count_around_end_up(Board, Row, Col, Start, ListOfScores) :-
         )
     ).
 
+% count_around_end_down(+Board, +Row, +Col, +Start, -ListOfScores)
+% Conta pontos abaixo da posição fornecida (Row, Col) no board.
+% Se a peça lida for `w` incrementa no primeiro elemento da lista Start mas se for `b` incrementa no segundo.
 count_around_end_down(Board, Row, Col, Start, ListOfScores) :-
     RowBelow is Row + 1,
     ((RowBelow > 12) -> ListOfScores = Start;
@@ -118,6 +155,9 @@ count_around_end_down(Board, Row, Col, Start, ListOfScores) :-
         )
     ).
 
+% count_around_end_left(+Board, +Row, +Col, +Start, -ListOfScores)
+% Conta pontos à esquerda da posição fornecida (Row, Col) no board.
+% Se a peça lida for `w` incrementa no primeiro elemento da lista Start mas se for `b` incrementa no segundo.
 count_around_end_left(Board, Row, Col, Start, ListOfScores) :-
     custom_nth1(Row, Board, RowList),
     ColLeft is Col - 1,
@@ -129,6 +169,9 @@ count_around_end_left(Board, Row, Col, Start, ListOfScores) :-
         )
     ).
 
+% count_around_end_right(+Board, +Row, +Col, +Start, -ListOfScores)
+% Conta pontos à direita da posição fornecida (Row, Col) no board.
+% Se a peça lida for `w` incrementa no primeiro elemento da lista Start mas se for `b` incrementa no segundo.
 count_around_end_right(Board, Row, Col, Start, ListOfScores) :-
     custom_nth1(Row, Board, RowList),
     length(RowList, Len),
@@ -142,6 +185,9 @@ count_around_end_right(Board, Row, Col, Start, ListOfScores) :-
         )
     ).
 
+% count_around_end_diagonal1(+Board, +Row, +Col, +Start, -ListOfScores)
+% Conta pontos na diagonal superior esquerda da posição fornecida (Row, Col) no board.
+% Se a peça lida for `w` incrementa no primeiro elemento da lista Start mas se for `b` incrementa no segundo.
 count_around_end_diagonal1(Board, Row, Col, Start, ListOfScores) :-
     RowAbove is Row - 1,
     ColLeft is Col - 1,
@@ -154,6 +200,9 @@ count_around_end_diagonal1(Board, Row, Col, Start, ListOfScores) :-
         )
     ).
 
+% count_around_end_diagonal2(+Board, +Row, +Col, +Start, -ListOfScores)
+% Conta pontos na diagonal inferior esquerda da posição fornecida (Row, Col) no board.
+% Se a peça lida for `w` incrementa no primeiro elemento da lista Start mas se for `b` incrementa no segundo.
 count_around_end_diagonal2(Board, Row, Col, Start, ListOfScores) :-
     RowBelow is Row + 1,
     ColLeft is Col - 1,
@@ -166,6 +215,9 @@ count_around_end_diagonal2(Board, Row, Col, Start, ListOfScores) :-
         )
     ).
 
+% count_around_end_diagonal3(+Board, +Row, +Col, +Start, -ListOfScores)
+% Conta pontos na diagonal superior direita da posição fornecida (Row, Col) no board.
+% Se a peça lida for `w` incrementa no primeiro elemento da lista Start mas se for `b` incrementa no segundo.
 count_around_end_diagonal3(Board, Row, Col, Start, ListOfScores) :-
     RowAbove is Row - 1,
     ColRight is Col + 1,
@@ -181,6 +233,9 @@ count_around_end_diagonal3(Board, Row, Col, Start, ListOfScores) :-
             )
     ).
 
+% count_around_end_diagonal4(+Board, +Row, +Col, +Start, -ListOfScores)
+% Conta pontos na diagonal inferior direita da posição fornecida (Row, Col) no board.
+% Se a peça lida for `w` incrementa no primeiro elemento da lista Start mas se for `b` incrementa no segundo
 count_around_end_diagonal4(Board, Row, Col, Start, ListOfScores) :-
     RowBelow is Row + 1,
     ColRight is Col + 1,
@@ -195,7 +250,9 @@ count_around_end_diagonal4(Board, Row, Col, Start, ListOfScores) :-
         )
     ).
 
-
+% count_around_end_under(+Board, +Row, +Col, +Start, -ListOfScores)
+% Conta pontos diretamente sob a posição fornecida (Row, Col) no board.
+% Se a peça lida for `w` incrementa no primeiro elemento da lista Start mas se for `b` incrementa no segundo
 count_around_end_under(Board, Row, Col, Start, ListOfScores) :-
     custom_nth1(Row, Board, RowList),
     custom_nth1(Col, RowList, Elem),
