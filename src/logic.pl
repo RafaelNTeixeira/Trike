@@ -231,18 +231,20 @@ count_around_end_diagonal3(Board, Row, Col, Start, ListOfScores) :-
     RowAbove is Row - 1,
     ColRight is Col + 1,
     ((RowAbove < 0) -> ListOfScores = Start;
-        custom_nth1(RowAbove, Board, RowAboveList), 
+        custom_nth1(RowAbove, Board, RowAboveList),
+        write('List L3: '), print_list(RowAboveList), nl, 
         length(RowAboveList, Len),
+        write('Len: '), write(Len), nl,
+    
         Len1 is Len - 1,
-        (ColRight > Len1) -> ListOfScores = Start;
-        /* 
-        Neste caso o nosso programa considera que a variavél Elem é sempre w indepentemente do valor que lá está!
-        */
+        ((ColRight > Len1) -> ListOfScores = Start;  
+            write('List L3 Post If: '), print_list(RowAboveList), nl,
             custom_nth1(ColRight, RowAboveList, Elem),
             ((Elem = 'w') -> increment_first(Start, ListOfScores);
                 (Elem = 'b') -> increment_second(Start, ListOfScores);
                     ListOfScores = Start
             )
+        )
     ).
 
 % count_around_end_diagonal4(+Board, +Row, +Col, +Start, -ListOfScores)
@@ -255,12 +257,13 @@ count_around_end_diagonal4(Board, Row, Col, Start, ListOfScores) :-
         custom_nth1(RowBelow, Board, RowBelowList),
         length(RowBelowList, Len),
         Len1 is Len - 1,
-        (ColRight > Len1) -> ListOfScores = Start;
+        ((ColRight > Len1) -> ListOfScores = Start;
             custom_nth1(ColRight, RowBelowList, Elem),
             ((Elem = 'w') -> increment_first(Start, ListOfScores);
                 (Elem = 'b') -> increment_second(Start, ListOfScores);
                     ListOfScores = Start
             )
+        )
     ).
 
 % count_around_end_under(+Board, +Row, +Col, +Start, -ListOfScores)
