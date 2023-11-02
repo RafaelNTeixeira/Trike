@@ -67,7 +67,7 @@ gameplay_bot([Player|Board], PlayerPos, Level, FinalScore, Winner) :-
 % Após percorrer o algoritmo, uma jogada é decidida.
 choose_move([Player|Board], Level, [PointX, PointY]) :-
     ((Level = 2) -> choose_random_p(Board, PointX, PointY);
-        choose_move_hard(Board, PointX, PointY)
+        hard(Board, PointX, PointY)
     ).
 
 /* -------------------------------------------------------------- */
@@ -180,6 +180,7 @@ Vai jogar sempre na posição onde tem mais peças há volta.
 */
 
 /* -------------------------------------------------------------- */
+
 % Predicate to get the coordinates of all 'p' positions in the board.
 get_p_coordinates(Board, PList) :-
     get_p_coordinates(Board, 0, [], PList).
@@ -199,164 +200,52 @@ get_row_p_coordinates([_|Rest], ColumnIndex, RowIndex, Acc, PList) :-
     NextColumnIndex is ColumnIndex + 1,
     get_row_p_coordinates(Rest, NextColumnIndex, RowIndex, Acc, PList).
 
-/* -------------------------------------------------------------- */
-
-/* Função para saber quantos w ou b tem há volta de uma certa posição */
-
-% count_around_p(+Row, +Col, +Board, +Player, +Count, -Res)
-% Predicado coordenada a contagem de células nas oito direções ao redor da coordenada fornecida
-count_around_p(Row, Col, Board, Player, Count, Res) :-
-    count_up_p(Row, Col, Board, Player, Count, TempCount1),
-    count_down_p(Row, Col, Board, Player, TempCount1, TempCount2),
-    count_left_p(Row, Col, Board, Player, TempCount2, TempCount3),
-    count_right_p(Row, Col, Board, Player, TempCount3, TempCount4),
-    count_diagnal1_p(Row, Col, Board, Player, TempCount4, TempCount5),
-    count_diagnal2_p(Row, Col, Board, Player, TempCount5, TempCount6),
-    count_diagnal3_p(Row, Col, Board, Player, TempCount6, TempCount7),
-    count_diagnal4_p(Row, Col, Board, Player, TempCount7, Res).
-
-% count_up_p(+Row, +Col, +Board, +Player, +Count, -Res)
-% Conta as células jogáveis acima da coordenada fornecida no board
-count_up_p(Row, Col, Board, Player, Count, Res) :-
-    RowAbove is Row - 1,
-    ((RowAbove < Col) -> Res = Count;  % Check if RowAbove is less than 0
-        custom_nth1(RowAbove, Board, RowAboveList),
-        custom_nth1(Col, RowAboveList, Elem),
-        ((Elem = Player) -> Res is Count + 1;
-            Res = Count
-        )
-    ).
-
-% count_down_p(+Row, +Col, +Board, +Player, +Count, -Res)
-% Conta as células jogáveis abaixo da coordenada fornecida no board
-count_down_p(Row, Col, Board, Player, Count, Res) :-
-    RowBelow is Row + 1,
-    (((RowBelow + Col) > 12) -> Res = Count;
-        custom_nth1(RowBelow, Board, RowBelowList),
-        custom_nth1(Col, RowBelowList, Elem),
-        ((Elem = Player) -> Res is Count + 1;
-            Res = Count
-        )
-    ).
-
-% count_left_p(+Row, +Col, +Board, +Player, +Count, -Res)
-% Conta as células jogáveis à esquerda da coordenada fornecida no board
-count_left_p(Row, Col, Board, Player, Count, Res) :-
-    custom_nth1(Row, Board, RowList),
-    ColLeft is Col - 1,
-    ((ColLeft < 0) -> Res = Count;
-        custom_nth1(ColLeft, RowList, Elem),
-        ((Elem = Player) -> Res is Count + 1;
-            Res = Count
-        )
-    ).
-
-% count_right_p(+Row, +Col, +Board, +Player, +Count, -Res)
-% Conta as células jogáveis à direita da coordenada fornecida no board
-count_right_p(Row, Col, Board, Player, Count, Res) :-
-    custom_nth1(Row, Board, RowList),
-    length(RowList, Len),
-    Len1 is Len - 1,
-    ColRight is Col + 1,
-    ((ColRight > Len1) -> Res = Count;
-        custom_nth1(ColRight, RowList, Elem),
-        ((Elem = Player) -> Res is Count + 1;
-            Res = Count
-        )
-    ).
-
-% count_diagnal1_p(+Row, +Col, +Board, +Player, +Count, -Res)
-% Conta as células jogáveis na diagonal superior esquerda da coordenada fornecida no board
-count_diagnal1_p(Row, Col, Board, Player, Count, Res) :-
-    RowAbove is Row - 1,
-    ColLeft is Col - 1,
-    ((RowAbove < 0 ; ColLeft < 0) -> Res = Count;
-        custom_nth1(RowAbove, Board, RowAboveList),
-        custom_nth1(ColLeft, RowAboveList, Elem),
-        ((Elem = Player) -> Res is Count + 1;
-            Res = Count
-        )
-    ).
-
-% count_diagnal2_p(+Row, +Col, +Board, +Player, +Count, -Res)
-% Conta as células jogáveis na diagonal inferior esquerda da coordenada fornecida no board
-count_diagnal2_p(Row, Col, Board, Player, Count, Res) :-
-    RowBelow is Row + 1,
-    ColLeft is Col - 1,
-    ((RowBelow > 12 ; ColLeft < 0) -> Res = Count;
-        custom_nth1(RowBelow, Board, RowBelowList),
-        custom_nth1(ColLeft, RowBelowList, Elem),
-        ((Elem = Player) -> Res is Count + 1;
-            Res = Count
-        )
-    ).
-
-% count_diagnal3_p(+Row, +Col, +Board, +Player, +Count, -Res)
-% Conta as células jogáveis na diagonal superior direita da coordenada fornecida no board
-count_diagnal3_p(Row, Col, Board, Player, Count, Res) :-
-    RowAbove is Row - 1,
-    ColRight is Col + 1,
-    ((RowAbove < 0) -> Res = Count;
-        custom_nth1(RowAbove, Board, RowAboveList), 
-        length(RowAboveList, Len),
-        Len1 is Len - 1,
-        (ColRight > Len1) -> Res = Count;
-            custom_nth1(ColRight, RowAboveList, Elem),
-            ((Elem = Player) -> Res is Count + 1;
-                Res = Count
-            )
-    ).
-
-% count_diagnal4_p(+Row, +Col, +Board, +Player, +Count, -Res)
-% Conta as células jogáveis na diagonal inferior direita da coordenada fornecida no board
-count_diagnal4_p(Row, Col, Board, Player, Count, Res) :-
-    RowBelow is Row + 1,
-    ColRight is Col + 1,
-    ((RowBelow > 12) -> Res = Count;
-        custom_nth1(RowBelow, Board, RowBelowList),
-        length(RowBelowList, Len),
-        Len1 is Len - 1,
-        (ColRight > Len1) -> Res = Count;
-            custom_nth1(ColRight, RowBelowList, Elem),
-            ((Elem = Player) -> Res is Count + 1;
-                Res = Count
-            )
-    ).
-
-/* -------------------------------------------------------------- */
-% Process each element in the list and store the results in a new list.
-process_elements([], _, []).
-process_elements([(Row, Col)|Rest], Board, Player, [Result|Results]) :-
-    count_around_p(Row, Col, Board, Player, 0, Result),
-    process_elements(Rest, Board, Player, Results).
 
 /* -------------------------------------------------------------- */
 
-% Predicate to print a list of coordinates (Row, Col)
-print_coordinates([]).
-print_coordinates([(Row, Col)|Rest]) :-
-    format(" 'p': (~d, ~d) ~n", [Row, Col]),
-    print_coordinates(Rest).
+count_p([], 0). % Base case: empty list has 0 occurrences of p.
+
+count_p([Row | RestBoard], Count) :-
+    count_p_in_row(Row, RowCount),      % Count p in the current row.
+    count_p(RestBoard, RestCount),      % Recursively count p in the rest of the board.
+    Count is RowCount + RestCount.      % Sum the counts.
+
+count_p_in_row([], 0). % Base case: an empty row has 0 occurrences of p.
+
+count_p_in_row([p | Rest], Count) :- % If p is the head of the row,
+    count_p_in_row(Rest, RestCount), % recursively count p in the rest of the row,
+    Count is RestCount + 1.         % and add 1 to the count.
+
+count_p_in_row([_ | Rest], Count) :- % If the head of the row is not p,
+    count_p_in_row(Rest, Count).     % just count p in the rest of the row.
 
 /* -------------------------------------------------------------- */
 
-print_degub([], []).
-print_degub([(Row, Col)|Rest], [H|T]):-
-    format("(~d,~d): ~d, ", [Row, Col, H]), 
-    print_degub(Rest, T).
+value(Board, Row, Col, Value) :-
+    clean_playables(Board, NewBoard),
+    swap(Row, Col, NewBoard, ListOfMoves),
+    count_p(ListOfMoves, Value).
 
 /* -------------------------------------------------------------- */
-/* Função para dizer qual é o p com mais w e b há volta */
-% find_p_with_more_w_and_b(+Board, +Player, -Row, -Col)
-find_p_with_more_w_and_b(Board, Player, Row, Col) :-
+process_p(_, [], []).
+process_p(Board, [(Row,Col)|Res], [Value|Values]) :-
+    value(Board, Row, Col, Value),
+    process_p(Board, Res, Values).
+
+/* -------------------------------------------------------------- */
+max_in_list1([X], X).
+max_in_list1([X|Xs], Max) :-
+    max_in_list1(Xs, RestMax),
+    Max is max(X, RestMax).
+
+% Find the maximum element in a list and its position
+max_position1(List, Pos) :-
+    max_in_list1(List, Max),         
+    nth1(Pos, List, Max).
+
+/* -------------------------------------------------------------- */
+hard(Board, Row, Col) :-
     get_p_coordinates(Board, PList),
-    print_coordinates(PList), nl,
-    process_elements(PList, Board, Results),
-    % print_degub(PList, Results), nl,
-    find_max_position(Results, Pos),
-    custom_nth1(Pos, Positions, (Row, Col)).
-
-/* -------------------------------------------------------------- */
-choose_move_hard(Board, Row, Col) :-
-    get_p_coordinates(Board, PList),
-    custom_nth1(0, PList, (Row, Col)).
+    process_p(Board, PList, Values),
+    max_position1(Values, Index),
+    custom_nth1(Index, PList, (Row, Col)).

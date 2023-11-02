@@ -74,6 +74,7 @@ valid_moves([CurPlayer|Board], [PlayerX, PlayerY], ListOfMoves) :-
 % identifica o vencedor e  calcula a pontuação total obtida por esse jogador.
 calculate_final_score([Player|Board], [PlayerX, PlayerY], Score, Winner) :-
     count_around_end(Board, PlayerX, PlayerY, [0,0], ListOfScores),
+    write('Under: '), print_list(ListOfScores), nl,
     format('Final Position: (~d,~d)', [PlayerX, PlayerY]), nl,
     max_in_list(ListOfScores, Score),
     find_max_position(ListOfScores, Res),
@@ -118,13 +119,21 @@ increment_second_helper([H|T], [H|NewT], Index) :-
 % Coordena a contagem dos pontos nas direções em redor de uma coordenada do board.
 count_around_end(Board, Row, Col, Start, ListOfScores) :-
     count_around_end_up(Board, Row, Col, Start, Temp1),
+    write('Up: '), print_list(Temp1), nl,
     count_around_end_down(Board, Row, Col, Temp1, Temp2),
+    write('Down: '), print_list(Temp2), nl,
     count_around_end_left(Board, Row, Col, Temp2, Temp3),
+    write('Left: '), print_list(Temp3), nl,
     count_around_end_right(Board, Row, Col, Temp3, Temp4),
+    write('Rigth: '), print_list(Temp4), nl,
     count_around_end_diagonal1(Board, Row, Col, Temp4, Temp5),
+    write('L1: '), print_list(Temp5), nl,
     count_around_end_diagonal2(Board, Row, Col, Temp5, Temp6),
+    write('L2: '), print_list(Temp6), nl,
     count_around_end_diagonal3(Board, Row, Col, Temp6, Temp7),
+    write('L3: '), print_list(Temp7), nl,
     count_around_end_diagonal4(Board, Row, Col, Temp7, Temp8),
+    write('L4: '), print_list(Temp8), nl,
     count_around_end_under(Board, Row, Col, Temp8, ListOfScores).
 
 % count_around_end_up(+Board, +Row, +Col, +Start, -ListOfScores)
