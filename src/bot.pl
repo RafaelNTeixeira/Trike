@@ -9,7 +9,7 @@ random_choice_pie_rule_bot(Choice) :-
 % Um jogador escolhe aleatoriamente a jogada inicial e o bot ecolhe aleatoriamente se quer ou não trocar de cor.
 pie_rule_bot([Player|Board], PlayerPos, [CurPlayer|NewBoard]) :-
     display_game_pie_rule(Board),
-    write('Player 1\'s turn:'), nl, nl,
+    write('\nPlayer 1\'s turn:'), nl, nl,
     write('Player '), write(Player), write(', choose an X starting point:'),
     read(PointX),
     write('Player '), write(Player), write(', now choose an Y starting point: '),
@@ -19,7 +19,7 @@ pie_rule_bot([Player|Board], PlayerPos, [CurPlayer|NewBoard]) :-
         nl, nl,
         write('Player 1\'s play:\n'),
         display_game_pie_rule(TempBoard),
-        write('Player Whites, do you want to switch colors?\n'),
+        write('\nPlayer Whites, do you want to switch colors?\n'),
         write('1. Yes'), nl, write('2. No'), nl,
         random_choice_pie_rule_bot(Choice),
         write('Player Whites choose: '), write(Choice), nl,
@@ -86,7 +86,7 @@ pie_rule_bot_vs_bot([Player|Board], PlayerPos, [CurPlayer|NewBoard]) :-
     nl, nl,
     write('Player 1\'s play:\n'),
     display_game_pie_rule(TempBoard),
-    write('Player Whites, do you want to switch colors?\n'),
+    write('\nPlayer Whites, do you want to switch colors?\n'),
     write('1. Yes'), nl, write('2. No'), nl,
     random_choice_pie_rule_bot(Choice),
     write('Player Whites choose: '), write(Choice), nl,
@@ -138,7 +138,6 @@ move_bot([Player|Board], [PointX, PointY], [NewPlayer|NewBoard]) :-
     replace(Board, PointX, PointY, Player, TempBoard),
     clean_playables(TempBoard, NewBoard),
     switch_player(NewPlayer, Player),
-    write('Move Bot'), nl,
     display_game([NewPlayer|NewBoard]).
 
 

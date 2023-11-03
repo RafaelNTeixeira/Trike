@@ -24,7 +24,7 @@ display_game_pie_rule(Board) :-
     write('  X\n'), 
     write('----|---|---|---|---|---|---|---|'), nl,
     display_rows(Board, 0),
-    write('    | 0 | 1 | 2 | 3 | 4 | 5 | 6 | Y\n'), nl, nl.
+    write('    | 0 | 1 | 2 | 3 | 4 | 5 | 6 | Y\n').
 
 % display_game(+GameState)
 % Motra o tabuleiro em função do GameState.
@@ -33,8 +33,8 @@ display_game([Player|Board]) :-
     write('  X\n'), 
     write('----|---|---|---|---|---|---|---|'), nl,
     display_rows(Board, 0),
-    write('    | 0 | 1 | 2 | 3 | 4 | 5 | 6 | Y\n'), nl, nl,
-    write('Player '), write(Player), write(' turn'), nl, nl.
+    write('    | 0 | 1 | 2 | 3 | 4 | 5 | 6 | Y\n'), nl,
+    write('Player '), write(Player), write(' turn'), nl.
 
 % display_rows(+Row, +N)
 % Mostra as linhas do tabuleiro. 

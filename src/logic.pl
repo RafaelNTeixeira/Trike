@@ -50,7 +50,7 @@ play_game :-
 % Exibe as jogadas válidas e, a cada movimento de um jogador, o ciclo prossegue, a menos que o jogo tenha terminado. Se o jogo terminar, calcula o resultado final e identifica o vencedor.
 gameplay([Player|Board], PlayerPos, FinalScore, Winner) :-
     valid_moves([Player|Board], PlayerPos, ListOfMoves),
-    ((game_over([Player|ListOfMoves]))-> 
+    ((game_over([Player|ListOfMoves])) -> 
         write('Player '), write(Player), write(', choose an X starting point:'),
         read(PointX),
         write('Player '), write(Player), write(', now choose an Y starting point: '),
@@ -402,17 +402,17 @@ replace_in_row([Value | Rest], X, Y, NewValue, [Value | NewRest]) :-
 % Um jogador escolhe aleatoriamente a jogada inicial e o outro se quer ou não trocar de cor.
 pie_rule([Player|Board], PlayerPos, [CurPlayer|NewBoard]) :-
     display_game_pie_rule(Board),
-    write('Player 1\'s turn:'), nl, nl,
+    write('\nPlayer 1\'s turn:'), nl, nl,
     write('Player '), write(Player), write(', choose an X starting point:'),
     read(PointX),
     write('Player '), write(Player), write(', now choose an Y starting point: '),
     read(PointY),
     (is_empty(Board, PointX, PointY) ->
         replace(Board, PointX, PointY, Player, TempBoard), % Player = b
-        nl, nl,
+        nl,
         write('Player 1\'s play:\n'),
         display_game_pie_rule(TempBoard),
-        write('Player Whites, do you want to switch colors?\n'),
+        write('\nPlayer Whites, do you want to switch colors?\n'),
         write('1. Yes'), nl, write('2. No'), nl,
         read(Choice),
         CurPlayer = w,
