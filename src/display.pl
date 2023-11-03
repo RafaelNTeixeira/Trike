@@ -15,8 +15,7 @@ initial_state(Size, GameState) :-
         [0,0,0],
         [0,0],
         [0]
-    ],
-    assertz(size(Size)).
+    ].
 
 % display_game_pie_rule(+Board)
 % Mostra o tabuleiro para a primeira jogada.

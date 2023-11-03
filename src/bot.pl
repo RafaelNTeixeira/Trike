@@ -63,8 +63,16 @@ gameplay_bot([Player|Board], PlayerPos, Level, FinalScore, Winner) :-
 % De acordo com o Level recebido (2-fácil ou 3-difícil), o algoritmo de jogabilidade do bot é escolhido.
 % Após percorrer o algoritmo, uma jogada é decidida.
 choose_move([Player|Board], Level, [PointX, PointY]) :-
-    ((Level = 2) -> choose_random_p(Board, PointX, PointY);
-        hard(Board, PointX, PointY)
+    ((Level = 3) ->
+        count_p(Board, Count),
+        ((Count = 1) -> get_p_coordinates(Board, [(PointX, PointY)]);
+            hard(Board, PointX, PointY)
+        )
+        ;
+        count_p(Board, Count),
+        ((Count = 1) -> get_p_coordinates(Board, [(PointX, PointY)]);
+            choose_random_p(Board, PointX, PointY)
+        )
     ).
 
 
