@@ -37,7 +37,7 @@ If using Windows, we can click on the options `File` -> `Consult` -> select the 
 
 ### Internal Game State Representation
 
-GameState is represented as a list with 2 elements, the current Player and the current Board. Board is also represented as a list but it includes sublists that represent rows of the board. Each element of rhose sublists, represents an element in a column. There can be 4 diferent values on the board:
+GameState is represented as a list with 2 elements, the current Player and the current Board. Board is also represented as a list but it includes sublists that represent rows of the board. Each element of those sublists, represents an element in a column. There can be 4 diferent values on the board:
 
 - `0` represents an empty space - printed on the board as `.`
 - `p` represents a playable space - printed on the board as `x`
