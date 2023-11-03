@@ -77,7 +77,6 @@ valid_moves([CurPlayer|Board], [PlayerX, PlayerY], ListOfMoves) :-
 % identifica o vencedor e  calcula a pontuação total obtida por esse jogador.
 calculate_final_score([_Player|Board], [PlayerX, PlayerY], Score, Winner) :-
     count_around_end(Board, PlayerX, PlayerY, [0,0], ListOfScores),
-    format('Final Position: (~d,~d)', [PlayerX, PlayerY]), nl,
     max_in_list(ListOfScores, Score),
     find_max_position(ListOfScores, Res),
     ((Score = 0) -> Winner = t;
@@ -448,11 +447,11 @@ is_inside(Board, X, Y) :-
 % Informa o vencedor do jogo.
 report_winner(Score, Winner) :-
     (Winner \= t ->
-        write('Player '), write(Winner), write(' is the WINNER!!!\n'),
-        write('He scored '), write(Score), write(' points wins the game.\n')
+        write('\nPlayer '), write(Winner), write(' is the WINNER!!!\n'),
+        write('Scored '), write(Score), write(' points.\n\n\n')
         ;
         write('It\'s a draw! No one wins.\n'),
-        write('Both players scored the same amount of points in the game.\n')
+        write('Both players scored the same amount of points.\n')
     ).
 
 % ----------------------------------------------------------------------------------------------------------------------------
