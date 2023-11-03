@@ -33,8 +33,8 @@ display_game([Player|Board]) :-
 
 display_rows([], _).
 display_rows([Row | Rest], N) :-
-    write('<'), write(N), write('>'), 
     (N < 10 -> write(' '); true),
+    write('<'), write(N), write('>'), 
     write('|'),
     display_row(Row, N), nl,
     write('----|---|---|---|---|---|---|---|'), nl,

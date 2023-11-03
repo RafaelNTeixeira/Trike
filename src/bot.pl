@@ -211,7 +211,7 @@ count_p([Row | RestBoard], Count) :-
     Count is RowCount + RestCount.      % Sum the counts.
 
 count_p_in_row([], 0). % Base case: an empty row has 0 occurrences of p.
-
+  
 count_p_in_row([p | Rest], Count) :- % If p is the head of the row,
     count_p_in_row(Rest, RestCount), % recursively count p in the rest of the row,
     Count is RestCount + 1.         % and add 1 to the count.

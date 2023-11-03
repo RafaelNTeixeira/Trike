@@ -39,10 +39,10 @@ If using Windows, we can click on the options `File` -> `Consult` -> select the 
 
 GameState is represented as a list with 2 elements, the current Player and the current Board. Board is also represented as a list but it includes sublists that represent rows of the board. Each element of rhose sublists, represents an element in a column. There can be 4 diferent values on the board:
 
-- `0` represents an empty space
-- `p` represents a playable space
-- `b` represents a space occupied by a black piece
-- `w` represents a space occupied by a white piece
+- `0` represents an empty space - printed on the board as `.`
+- `p` represents a playable space - printed on the board as `x`
+- `b` represents a space occupied by a black piece - printed on the board as `B`
+- `w` represents a space occupied by a white piece - printed on the board as `W`
 
 
 Here are some representations of the different states on the game:
@@ -213,6 +213,19 @@ game_over([Player|ListOfMoves]) :-
 ---
 
 
+### Game State Evaluation
+
+The `value(+Board, +Row, +Col, -Value)` predicate takes four arguments: the current Board, the coordinates of a playable piece and a Value that determines the quality of the play. 
+```prolog
+value(Board, Row, Col, Value) :-
+    clean_playables(Board, NewBoard),
+    swap(Row, Col, NewBoard, ListOfMoves),
+    count_p(ListOfMoves, Value).
+```
+This predicate calls the predicate `swap(+Row, +Col, +NewBoard, -ListOfMoves)` to determine and mark on the board the playable places that are possible from the coordinate (Row, Col) given and the predicate `count_p(+ListOfMoves, -Value)` to determine how many playable spaces exist from that coordinate.
+This predicate will be useful for the bot to determine the move with the best `Value` by iterating trough all the possible plays from a given position.
+
+
 ### Computer Plays
 
 All the bots resort to the predicate `choose_move(+GameState, +Level, -Move)` to pick a valid move according to the difficulty (Level) picked at the game menu:
@@ -220,27 +233,37 @@ All the bots resort to the predicate `choose_move(+GameState, +Level, -Move)` to
 ```prolog
 choose_move([Player|Board], Level, [PointX, PointY]) :-
     ((Level = 2) -> choose_random_p(Board, PointX, PointY);
-        find_p_with_more_w_and_b(Board, PointX, PointY)
+        hard(Board, PointX, PointY)
     ).
 ```
 If `Level` corresponds to `2`, the `choose_random_p(+Board, -PointX, -PointY)` predicate is called, picking a playable space, marked with `p`, randomly.
-Oherwise, the `find_p_with_more_w_and_b(+Board, -PointX, -PointY)` predicate is called to run the algorithm with hardest difficulty available on the game.
+Oherwise, the `hard(+Board, -PointX, -PointY)` predicate is called to run the algorithm with hardest difficulty available on the game.
 
-To make up a good strategy for an algorithm, after playing and studying the game Trike a bit, we realised that one of best possible moves to make was to place a piece right next to our lastly played piece so that we can always keep the maximum number of checkers around us since the winner is determined by that condition.
-With that, we decided to implement our hardest algorithm around that strategy, so the predicate `find_p_with_more_w_and_b(+Board, -PointX, -PointY)` does exactly what was mentioned before:
+To make up a good strategy for an algorithm for the hard difficulty of the bot, after playing and studying the game Trike a bit, we realised that one of best possible moves to make to play on the cell with the most available spaces possible. This way, the play takes more of a defensive aprocah since it always places a piece where the opponent isn't trying to end the game. 
+With that, we decided to implement our hardest algorithm around that strategy, so the predicate `hard(+Board, -PointX, -PointY)` does exactly what was mentioned before by picking the move with the best Value:
 
 ```prolog
-find_p_with_more_w_and_b(Board, Row, Col) :-
+hard(Board, Row, Col) :-
     get_p_coordinates(Board, PList),
-    process_elements(PList, Board, Results),
-    find_max_position(Results, Pos),
-    custom_nth1(Pos, PList, (Row, Col)).
+    process_p(Board, PList, Values),
+    max_position1(Values, Index),
+    custom_nth1(Index, PList, (Row, Col)).
+
+process_p(_, [], []).
+process_p(Board, [(Row,Col)|Res], [Value|Values]) :-
+    value(Board, Row, Col, Value),
+    process_p(Board, Res, Values).
+
+value(Board, Row, Col, Value) :-
+    clean_playables(Board, NewBoard),
+    swap(Row, Col, NewBoard, ListOfMoves),
+    count_p(ListOfMoves, Value).
 ```
 
-- `get_p_coordinates(Board, PList)`: checks all the cells of the board and returns all the playable ones (marked with `p`)
-- `process_elements(PList, Board, Results)`: process each element in the list and store the scores in a new list. Score is determined by the number of pieces of the player that are around each playable space
-- `find_max_position(Results, Pos)`: find the position of the maximum value on the list with the scores
-- `custom_nth1(Pos, PList, (Row, Col)`: retrieve the position of the element with the maximum score
+- `get_p_coordinates(+Board, -PList)`: checks all the cells of the board and returns all the playable ones (marked with `p`)
+- `process_p(+Board, +PList, -Values)`: process each element in the list and store the values in a new list. This predicate iterates trough all the playable spaces and calls the predicate `value(+Board, +Row, +Col, -Value)` to calculate the number of playable places if a piece is placed on that cell and stores that number on the variable Values. 
+- `max_position1(+Values, -Index)`: find the position of the maximum value on the list, this is, the play that will have the most playable spaces
+- `custom_nth1(+Index, +PList, -(Row, Col)`: retrieve the position of the element with the maximum score
 
 --- 
 
