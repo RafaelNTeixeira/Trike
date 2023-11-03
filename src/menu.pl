@@ -1,12 +1,18 @@
+% menu/0
+% Mostra as opções de menu e lê a opção escolida.
 menu :-
     clear_save,
     display_menu,
     read(Option), % ler valor inserido no menu
     run_mode(Option). % desencadeia ação da opção selecionada do menu
 
+% clear_save/0
+% Limpa todos os dados do base de dados em uso.
 clear_save :-
     abolish(size/1).
 
+% display_menu/0
+% Mostra o menu principal.
 display_menu :-
     write('    _________  ______ ______ \n'),
     write('   /_  __/ _ \\/  _/ //_/ __/ \n'),
@@ -22,6 +28,8 @@ display_menu :-
     write('___________________________\n'),
     write('SELECT YOUR OPTION!\n').
 
+% run_mode(X)
+% Corre o modo escolhido pelo utilizador.
 run_mode(0) :-
     nl,
     write('          _________  ______ ______ \n'),

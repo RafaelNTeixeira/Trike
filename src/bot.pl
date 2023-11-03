@@ -1,13 +1,12 @@
-/* -------------------------------------------------------------- */
-
+% random_choice_pie_rule_bot(-Choice)
+% Escolhe 1 ou 2 para o bot escolher uma opção na pie rule.
 random_choice_pie_rule_bot(Choice) :-
     random(1, 3, Choice).
 
-/* -------------------------------------------------------------- */
 
-% pie_rule(+GameState, -PlayerPos, -NewGameState)
-% Aplicar a Pie Rule no modo Player Vs Player
-% Um jogador escolhe aleatoriamente a jogada inicial e o outro se quer ou não trocar de cor.
+% pie_rule_bot(+GameState, -PlayerPos, -NewGameState)
+% Aplicar a Pie Rule no modo Player Vs Bot
+% Um jogador escolhe aleatoriamente a jogada inicial e o bot ecolhe aleatoriamente se quer ou não trocar de cor.
 pie_rule_bot([Player|Board], PlayerPos, [CurPlayer|NewBoard]) :-
     display_game_pie_rule(Board),
     write('Player 1\'s turn:'), nl, nl,
@@ -35,7 +34,6 @@ pie_rule_bot([Player|Board], PlayerPos, [CurPlayer|NewBoard]) :-
         pie_rule_bot([Player|Board], PlayerPos, [CurPlayer|NewBoard])
     ).
 
-/* -------------------------------------------------------------- */
 
 % gameplay_bot(+GameState, +PlayerPos, +Level, -FinalScore, -Winner)
 % Ciclo de jogo para o Player Vs Bot.
@@ -60,7 +58,6 @@ gameplay_bot([Player|Board], PlayerPos, Level, FinalScore, Winner) :-
     calculate_final_score([Player|Board], PlayerPos, FinalScore, Winner)
     ).
 
-/* -------------------------------------------------------------- */
 
 % choose_move(+GameState, +Level, -Move)
 % De acordo com o Level recebido (2-fácil ou 3-difícil), o algoritmo de jogabilidade do bot é escolhido.
@@ -70,7 +67,6 @@ choose_move([Player|Board], Level, [PointX, PointY]) :-
         hard(Board, PointX, PointY)
     ).
 
-/* -------------------------------------------------------------- */
 
 % pie_rule_bot_vs_bot(+GameState, -PlayerPos, -NewGameState)
 % Aplicar a Pie Rule no modo Bot Vs Bot
@@ -94,9 +90,9 @@ pie_rule_bot_vs_bot([Player|Board], PlayerPos, [CurPlayer|NewBoard]) :-
         write('Player 2 is now playing with the black pieces\n'), nl; true),
     PlayerPos = [PointX, PointY].
 
-/* -------------------------------------------------------------- */
+
 % choose_random_zero(+Board, -Row, -Col)
-% Escolhe aleatoriamente uma célula do board
+% Escolhe aleatoriamente uma célula do board.
 choose_random_zero(Board, Row, Col) :-
     custom_flatten(Board, FlatBoard),
     findall(Row-Col, (nth1(Position, FlatBoard, 0), nth1(Row, Board, RowList), nth1(Col, RowList, 0), Position > 0), Positions),
@@ -107,7 +103,6 @@ choose_random_zero(Board, Row, Col) :-
     PCol is RandomCol - 1.
 
 
-/* -------------------------------------------------------------- */
 
 % gameplay_bot_vs_bot(+GameState, +PlayerPos, -FinalScore, -Winner)
 % Ciclo de jogo para o Bot Vs Bot.
@@ -128,7 +123,6 @@ gameplay_bot_vs_bot([Player|Board], PlayerPos, FinalScore, Winner) :-
     calculate_final_score([Player|Board], PlayerPos, FinalScore, Winner)
     ).
 
-/* -------------------------------------------------------------- */
 
 % move_bot(+GameState, +Move, -NewGameState)
 % Aplica a jogada do bot no board e troca de jogador após essa jogada
@@ -139,13 +133,6 @@ move_bot([Player|Board], [PointX, PointY], [NewPlayer|NewBoard]) :-
     write('Move Bot'), nl,
     display_game([NewPlayer|NewBoard]).
 
-/* -------------------------------------------------------------- */
-/*
-Bot Easy
-Vai jogar numa posição random.
-*/
-
-/* -------------------------------------------------------------- */
 
 % custom_flatten(+Board, -FlatBoard)
 % Predicado personalizado para achatamento de uma nested list.
@@ -159,7 +146,6 @@ custom_flatten([Head|Rest], [Head|FlatRest]) :-
     \+ is_list(Head),
     custom_flatten(Rest, FlatRest).
 
-/* -------------------------------------------------------------- */
 
 % choose_random_p(+Board, -PRow, -PCol)
 % Predicado para escolher uma posição aleatória com um `p` (espaço jogável) do board e retornar as suas coordenadas
@@ -172,16 +158,9 @@ choose_random_p(Board, PRow, PCol) :-
     PRow is RandomPRow - 1,
     PCol is RandomPCol - 1.
 
-/* -----------------------------------------------------------------*/
 
-/*
-Bot Hard
-Vai jogar sempre na posição onde tem mais peças há volta.
-*/
-
-/* -------------------------------------------------------------- */
-
-% Predicate to get the coordinates of all 'p' positions in the board.
+% get_p_coordinates(+Board, -PList)
+% Predicado para obter as coordenadas de todas as posições 'p' no quadro.
 get_p_coordinates(Board, PList) :-
     get_p_coordinates(Board, 0, [], PList).
 
@@ -201,49 +180,54 @@ get_row_p_coordinates([_|Rest], ColumnIndex, RowIndex, Acc, PList) :-
     get_row_p_coordinates(Rest, NextColumnIndex, RowIndex, Acc, PList).
 
 
-/* -------------------------------------------------------------- */
-
-count_p([], 0). % Base case: empty list has 0 occurrences of p.
+% count_p(+Board, -Count)
+% Conta todos os p de um board.
+count_p([], 0). 
 
 count_p([Row | RestBoard], Count) :-
-    count_p_in_row(Row, RowCount),      % Count p in the current row.
-    count_p(RestBoard, RestCount),      % Recursively count p in the rest of the board.
-    Count is RowCount + RestCount.      % Sum the counts.
+    count_p_in_row(Row, RowCount),      
+    count_p(RestBoard, RestCount),      
+    Count is RowCount + RestCount.      
 
-count_p_in_row([], 0). % Base case: an empty row has 0 occurrences of p.
+count_p_in_row([], 0). 
   
-count_p_in_row([p | Rest], Count) :- % If p is the head of the row,
-    count_p_in_row(Rest, RestCount), % recursively count p in the rest of the row,
-    Count is RestCount + 1.         % and add 1 to the count.
+count_p_in_row([p | Rest], Count) :- 
+    count_p_in_row(Rest, RestCount), 
+    Count is RestCount + 1.         
 
-count_p_in_row([_ | Rest], Count) :- % If the head of the row is not p,
-    count_p_in_row(Rest, Count).     % just count p in the rest of the row.
+count_p_in_row([_ | Rest], Count) :- 
+    count_p_in_row(Rest, Count).    
 
-/* -------------------------------------------------------------- */
 
+% value(+Board, +Row, +Col, -Value)
+% Determina um valor de uma jogada ao contar quantas jogadas disponivéis ficam após jogar.
 value(Board, Row, Col, Value) :-
     clean_playables(Board, NewBoard),
     swap(Row, Col, NewBoard, ListOfMoves),
     count_p(ListOfMoves, Value).
 
-/* -------------------------------------------------------------- */
+% process_p(+Board, +PList, -Values)
+% Chama o predicado *value* para todas as jogadas possivéis. 
 process_p(_, [], []).
 process_p(Board, [(Row,Col)|Res], [Value|Values]) :-
     value(Board, Row, Col, Value),
     process_p(Board, Res, Values).
 
-/* -------------------------------------------------------------- */
+% max_in_list1(+List, -Max)
+% O predicado diz qual é o maior valor da lista.
 max_in_list1([X], X).
 max_in_list1([X|Xs], Max) :-
     max_in_list1(Xs, RestMax),
     Max is max(X, RestMax).
 
-% Find the maximum element in a list and its position
+% max_position1(+List, -Pos)
+% O predicado diz qual é a posição do maior valor da lista.
 max_position1(List, Pos) :-
     max_in_list1(List, Max),         
     nth1(Pos, List, Max).
 
-/* -------------------------------------------------------------- */
+% hard(+Board, -Row, -Col)
+% Escolhe a posição onde o bot hard vai jogar.
 hard(Board, Row, Col) :-
     get_p_coordinates(Board, PList),
     process_p(Board, PList, Values),

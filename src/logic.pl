@@ -1,5 +1,9 @@
+% initial_player(+Player)
+% Define o jogador inicial como o 'b'.
 initial_player(b).
 
+% switch_player(+Player1, +Player2)
+% Muda o jogador 1 pelo jogador 2.
 switch_player(b, w).
 switch_player(w, b).
 
@@ -74,7 +78,6 @@ valid_moves([CurPlayer|Board], [PlayerX, PlayerY], ListOfMoves) :-
 % identifica o vencedor e  calcula a pontuação total obtida por esse jogador.
 calculate_final_score([Player|Board], [PlayerX, PlayerY], Score, Winner) :-
     count_around_end(Board, PlayerX, PlayerY, [0,0], ListOfScores),
-    write('Under: '), print_list(ListOfScores), nl,
     format('Final Position: (~d,~d)', [PlayerX, PlayerY]), nl,
     max_in_list(ListOfScores, Score),
     find_max_position(ListOfScores, Res),
@@ -84,7 +87,6 @@ calculate_final_score([Player|Board], [PlayerX, PlayerY], Score, Winner) :-
     ).
 
 
-/*------------------------------------------------------------------------------------*/
 % increment_first(+Start, +ListOfScores)
 % Recebe uma lista como entrada e aumenta o valor do primeiro elemento em 1.
 increment_first([OldFirst | Rest], [NewFirst | Rest]) :-
@@ -114,26 +116,18 @@ increment_second_helper([H|T], [H|NewT], Index) :-
     NewIndex is Index + 1,
     increment_second_helper(T, NewT, NewIndex).
 
-/*------------------------------------------------------------------------------------*/
+% ---------------------------------------------------------------------------------------------------------------------------------------------
 % count_around_end(+Board, +Row, +Col, +Start, -ListOfScores)
 % Coordena a contagem dos pontos nas direções em redor de uma coordenada do board.
 count_around_end(Board, Row, Col, Start, ListOfScores) :-
     count_around_end_up(Board, Row, Col, Start, Temp1),
-    write('Up: '), print_list(Temp1), nl,
     count_around_end_down(Board, Row, Col, Temp1, Temp2),
-    write('Down: '), print_list(Temp2), nl,
     count_around_end_left(Board, Row, Col, Temp2, Temp3),
-    write('Left: '), print_list(Temp3), nl,
     count_around_end_right(Board, Row, Col, Temp3, Temp4),
-    write('Rigth: '), print_list(Temp4), nl,
     count_around_end_diagonal1(Board, Row, Col, Temp4, Temp5),
-    write('L1: '), print_list(Temp5), nl,
     count_around_end_diagonal2(Board, Row, Col, Temp5, Temp6),
-    write('L2: '), print_list(Temp6), nl,
     count_around_end_diagonal3(Board, Row, Col, Temp6, Temp7),
-    write('L3: '), print_list(Temp7), nl,
     count_around_end_diagonal4(Board, Row, Col, Temp7, Temp8),
-    write('L4: '), print_list(Temp8), nl,
     count_around_end_under(Board, Row, Col, Temp8, ListOfScores).
 
 % count_around_end_up(+Board, +Row, +Col, +Start, -ListOfScores)
@@ -232,13 +226,9 @@ count_around_end_diagonal3(Board, Row, Col, Start, ListOfScores) :-
     ColRight is Col + 1,
     ((RowAbove < 0) -> ListOfScores = Start;
         custom_nth1(RowAbove, Board, RowAboveList),
-        write('List L3: '), print_list(RowAboveList), nl, 
-        length(RowAboveList, Len),
-        write('Len: '), write(Len), nl,
-    
+        length(RowAboveList, Len),   
         Len1 is Len - 1,
         ((ColRight > Len1) -> ListOfScores = Start;  
-            write('List L3 Post If: '), print_list(RowAboveList), nl,
             custom_nth1(ColRight, RowAboveList, Elem),
             ((Elem = 'w') -> increment_first(Start, ListOfScores);
                 (Elem = 'b') -> increment_second(Start, ListOfScores);
@@ -277,81 +267,88 @@ count_around_end_under(Board, Row, Col, Start, ListOfScores) :-
             ListOfScores = Start
     ).
 
-/*------------------------------------------------------------------------------------*/
-% Base case: If the list contains only one element, its position is 0.
+% ---------------------------------------------------------------------------------------------------------------------------------------------
+
+% max_position(+List, - MaxPosition)
+% Caso base: Se a lista contiver apenas um elemento, sua posição será 0.
 max_position([MaxValue], 0) :- !.
 
-% Recursive case:
-% - Find the maximum position of the tail of the list.
-% - If the head of the list is greater than or equal to the maximum of the tail,
-%   the maximum position of the list is 0 (the current position).
-% - If the head of the list is less than the maximum of the tail,
-%   the maximum position of the list is the maximum position of the tail + 1.
-
+% Caso recursivo:
+% - Encontre a posição máxima do final da lista.
+% - Se o início da lista for maior ou igual ao máximo do final, a posição máxima da lista é 0 (a posição atual).
 max_position([Head | Tail], MaxPosition) :-
     max_position(Tail, TailMaxPosition),
     find_max(Tail, TailMax),
     Head >= TailMax,
     MaxPosition is 0, !.
 
+% Caso recursivo:
+% - Se o início da lista for menor que o máximo do final, a posição máxima da lista é a posição máxima da cauda + 1.
 max_position([Head | Tail], MaxPosition) :-
     max_position(Tail, TailMaxPosition),
     find_max(Tail, TailMax),
     Head < TailMax,
     MaxPosition is TailMaxPosition + 1.
 
-% Predicate to find the position of the maximum value in a list.
+% Predicado para encontrar a posição do valor máximo em uma lista.
 find_max_position(List, MaxPosition) :-
     max_position(List, MaxPosition).
 
-/*------------------------------------------------------------------------------------*/
 
+% max_or_zero(+X, +Y, -Max)
+% Predicado que retorna valor máximo entre X e Y, se X = Y retorna 0.
 max_or_zero(X, Y, Max) :-
     (X > Y, Max is X);
     (Y > X, Max is Y);
     (X =:= Y, Max is 0).
 
+% max_in_list(+List, -Max)
+% Caso Base: Se existe apenas um elemento na lista esse elemento é o maior.
 max_in_list([X], X).
+
+% Caso recursivo: Chama a função max_or_zero para os dois primeiros elementos de uma lista.
 max_in_list([X, Y | Rest], Max) :-
     max_or_zero(X, Y, TempMax),
     max_in_list([TempMax | Rest], Max).
 
-/*------------------------------------------------------------------------------------*/
 
-% Base case: If the list contains only one element, the maximum is that element.
+% max_in_list(+List, - Max)
+% Caso base: Se a lista contiver apenas um elemento, o máximo será esse elemento.
 max_in_list([X], X) :- !.
 
-% Recursive case:
-% - If the head of the list is greater than or equal to the maximum of the tail,
-%   the maximum of the list is the head.
-% - If the head of the list is less than the maximum of the tail,
-%   the maximum of the list is the maximum of the tail.
+% Caso recursivo:
+% - Se o início da lista for maior ou igual ao máximo do final, o máximo da lista é o cabeçalho.
 max_in_list([Head | Tail], Max) :-
     max_in_list(Tail, TailMax),
     Head >= TailMax,
     Max is Head, !.
+
+% Caso recursivo:
+% - Se o início da lista for menor que o máximo do final, o máximo da lista é o máximo da cauda.
 max_in_list([Head | Tail], Max) :-
     max_in_list(Tail, TailMax),
     Head < TailMax,
     Max is TailMax.
 
-% Predicate to find the maximum value in a list.
+% Predicado para encontrar o valor máximo em uma lista.
 find_max(List, Max) :-
     max_in_list(List, Max).
 
-/*------------------------------------------------------------------------------------*/
+% ---------------------------------------------------------------------------------------------------------------------------------------------
 
-% Define a predicate to check if there is a 'p' in a list.
+% contains_p(+List)
+% Predicado para verificar se existe um 'p' em uma lista.
 contains_p([p|_]).
 contains_p([_|T]) :- contains_p(T).
 
-% Define a predicate to check if there is a 'p' in the board.
+% check_board(+Board)
+% Predicado para verificar se existe um 'p' no tabuleiro.
 check_board(Board) :- 
-    member(Row, Board),  % Get a row from the board.
-    contains_p(Row).    % Check if the row contains 'p'.
+    member(Row, Board),
+    contains_p(Row).
 
-/*------------------------------------------------------------------------------------*/
-    
+% move(+GameState, +Move, -NewMove, -NewGameState)
+% Predicado que se um movimento é válido escreve esse mesmo movimento no tabuleiro, se for inválido ele pede para escolher outro movimento. 	   
 move([Player|Board], [PointX, PointY], [PointX1, PointY1], [NewPlayer|NewBoard]) :- 
     (check_if_valid(Board, PointX, PointY) ->
         PointX1 = PointX,
@@ -369,17 +366,21 @@ move([Player|Board], [PointX, PointY], [PointX1, PointY1], [NewPlayer|NewBoard])
         move([Player|Board], [PointX2, PointY2], [PointX1, PointY1], [NewPlayer|NewBoard])
     ).
 
-% Checks if a point is playable.
+% check_if_valid(+Board, +X, +Y)
+% O predicado verifica se a posição (X, Y) é válida para jogar.
 check_if_valid(Board, X, Y) :-
     is_inside(Board, X, Y),
     nth0(X, Board, Row),
     nth0(Y, Row, p).
 
+% update_board_first_play(+Board, +Player, +PointX, +PointY, -NewBoard)
+% Predicado que altera o tabuleiro na primeira jogada.
 update_board_first_play(Board, Player, PointX, PointY, NewBoard) :-
     replace(Board, PointX, PointY, Player, NewBoard),
     display_game_pie_rule(Board).
 
-% Replace a cell in the board with a new value.
+% replace(+Board, +X, +Y, +NewValue, -NewBoard)
+% Substitui uma célula do tabuleiro por um novo valor.
 replace([Row | Rest], 0, Y, NewValue, [NewRow | Rest]) :-
     replace_in_row(Row, 0, Y, NewValue, NewRow).
 replace([Row | Rest], X, Y, NewValue, [Row | NewRest]) :-
@@ -387,6 +388,8 @@ replace([Row | Rest], X, Y, NewValue, [Row | NewRest]) :-
     X1 is X - 1,
     replace(Rest, X1, Y, NewValue, NewRest).
 
+% replace_in_row(+Row, +X, +Y, +NewValue, -NewRow)
+% Substitui uma célula da linha por um novo valor.
 replace_in_row([_ | Rest], 0, Y, NewValue, [NewValue | Rest]) :-
     Y = 0; Y = p.
 replace_in_row([Value | Rest], X, Y, NewValue, [Value | NewRest]) :-
@@ -394,6 +397,10 @@ replace_in_row([Value | Rest], X, Y, NewValue, [Value | NewRest]) :-
     Y1 is Y - 1,
     replace_in_row(Rest, X, Y1, NewValue, NewRest).
 
+
+% pie_rule(+GameState, -PlayerPos, -NewGameState)
+% Aplicar a Pie Rule no modo Player Vs Player
+% Um jogador escolhe aleatoriamente a jogada inicial e o outro se quer ou não trocar de cor.
 pie_rule([Player|Board], PlayerPos, [CurPlayer|NewBoard]) :-
     display_game_pie_rule(Board),
     write('Player 1\'s turn:'), nl, nl,
@@ -420,13 +427,15 @@ pie_rule([Player|Board], PlayerPos, [CurPlayer|NewBoard]) :-
         pie_rule([Player|Board], PlayerPos, [CurPlayer|NewBoard])
     ).
 
-% Checks if a point is empty.
+% is_empty(+Board, +X, +Y)
+% Verifica se um ponto está vazio.
 is_empty(Board, X, Y) :-
     is_inside(Board, X, Y),
     nth0(X, Board, Col),
     nth0(Y, Col, 0).
 
-% Check if a point is inside the board.
+% is_inside(+Board, +X, +Y)
+% Verifique se há um ponto dentro do tabuleiro.
 is_inside(Board, X, Y) :-
     length(Board, Rows),
     X >= 0,
@@ -436,7 +445,8 @@ is_inside(Board, X, Y) :-
     Y >= 0,
     Y < Cols.
 
-% Report the winner of the game.
+% report_winner(+Score, +Winner)
+% Informa o vencedor do jogo.
 report_winner(Score, Winner) :-
     (Winner \= t ->
         write('Player '), write(Winner), write(' is the WINNER!!!\n'),
@@ -471,20 +481,21 @@ print_row([X|Rest]) :-
 /*------------------------------------------------------------------------------------*/
 
 % custom_nth1(+Index, +List, -Element)
+% Predicado auxiliar para obter o elemento de uma lista num certo índice.
 custom_nth1(0, [Element|_], Element).
 custom_nth1(Index, [_|Rest], Element) :-
     Index > 0,
     NextIndex is Index - 1,
     custom_nth1(NextIndex, Rest, Element).
 
-/*------------------------------------------------------------------------------------*/
-% Swap 0 with p in all directions from X
+
+% swap(+Row, +Col, +Board, -NewBoard)
+% Troca 0 por p em todas as direções de (Row, Col).
 swap(Row, Col, Board, NewBoard) :-
-    % swapRight(Row, Col, Board, NewBoard),
-    % print_board(NewBoard).
     swapInDirection(Row, Col, Board, NewBoard).
 
-% Swap 0 with p in all directions (up, down, left, right, and diagonals)
+% swapInDirection(+Row, +Col, +Board, -NewBoard)
+% Troca 0 por p em todas as direções (cima, baixo, esquerda, direita e diagonais)
 swapInDirection(Row, Col, Board, NewBoard) :-
     swapUp(Row, Col, Board, TempBoard1),
     swapDown(Row, Col, TempBoard1, TempBoard2),
@@ -494,125 +505,147 @@ swapInDirection(Row, Col, Board, NewBoard) :-
     swapDiagonal2(Row, Col, TempBoard5, TempBoard6),
     swapDiagonal3(Row, Col, TempBoard6, TempBoard7),
     swapDiagonal4(Row, Col, TempBoard7, NewBoard).
-    % print_board(NewBoard).
 
-/*---------------- Swap Up -------------------------*/
-% Swap 0 with p in the up direction
+% swapUp(+Row, +Col, + Board, -NewBoard)
+% Muda 0 por 'p' no tabuleiro na direção de cima. 
+% Caso Base: A linha é igual à coluna, o tabuleiro mantém-se.
 swapUp(Col, Col, Board, NewBoard) :-
     NewBoard = Board.
 
+% Caso Recursivo: Muda 0 por 'p' até chegar ao fim do tabuleiro ou encontrar um 'b' ou 'w'.
 swapUp(Row, Col, Board, NewBoard) :-
     RowAbove is Row - 1,
     custom_nth1(RowAbove, Board, RowAboveList),
     custom_nth1(Col, RowAboveList, Elem),
     ((Elem = w ; Elem = b) ->
-        NewBoard = Board; % Stop the loop if Elem is 'w' or 'b'
+        NewBoard = Board; 
     (Elem = 0) ->
         replace_swap(Col, RowAboveList, p, NewRowAbove),
         replace_swap(RowAbove, Board, NewRowAbove, TempBoard),
         swapUp(RowAbove, Col, TempBoard, NewBoard);
-    NewBoard = Board). % Default case when Elem is something else, no change
+    NewBoard = Board). 
 
-/*---------------- Swap Down -------------------------*/
-% Swap 0 with p in the down direction
+
+% swapDown(+Row, +Col, + Board, -NewBoard)
+% Muda 0 por 'p' no tabuleiro na direção de baixo. 
+% Caso Base: A suma de Row e Col é igual a 12, o tabuleiro mantém-se.
 swapDown(Row, Col, Board, NewBoard) :-
     Row + Col =:= 12,
     NewBoard = Board.
 
+% Caso Recursivo: Muda 0 por 'p' até chegar ao fim do tabuleiro ou encontrar um 'b' ou 'w'.
 swapDown(Row, Col, Board, NewBoard) :-
     RowBelow is Row + 1,
     custom_nth1(RowBelow, Board, RowBelowList),
     custom_nth1(Col, RowBelowList, Elem),
     ((Elem = w ; Elem = b) ->
-        NewBoard = Board; % Stop the loop if Elem is 'w' or 'b'
+        NewBoard = Board; 
     (Elem = 0) -> 
         replace_swap(Col, RowBelowList, p, NewRowBelow),
         replace_swap(RowBelow, Board, NewRowBelow, TempBoard),
         swapDown(RowBelow, Col, TempBoard, NewBoard);
     NewBoard = Board).
 
-/*---------------- Swap Left -------------------------*/
-% Swap 0 with p in the left direction
+
+% swapLeft(+Row, +Col, + Board, -NewBoard)
+% Muda 0 por 'p' no tabuleiro na direção da esquerda. 
+% Caso Base: A coluna é igual a 0, o tabuleiro mantém-se.
 swapLeft(Row, 0, Board, NewBoard) :-
     NewBoard = Board.
 
+% Caso Recursivo: Muda 0 por 'p' até chegar ao fim do tabuleiro ou encontrar um 'b' ou 'w'.
 swapLeft(Row, Col, Board, NewBoard) :-
     custom_nth1(Row, Board, RowList),
     ColLeft is Col - 1,
     custom_nth1(ColLeft, RowList, Elem),
     ((Elem = w ; Elem = b) ->
-        NewBoard = Board; % Stop the loop if Elem is 'w' or 'b'
+        NewBoard = Board; 
     (Elem = 0) -> 
         replace_swap(ColLeft, RowList, p, NewRowLeft),
         replace_swap(Row, Board, NewRowLeft, TempBoard),
         swapLeft(Row, ColLeft, TempBoard, NewBoard);
     NewBoard = Board).
 
-/*---------------- Swap Right -------------------------*/
-% Swap 0 with p in the right direction
+
+% swapRight(+Row, +Col, + Board, -NewBoard)
+% Muda 0 por 'p' no tabuleiro na direção da direita. 
+% Caso Base: A coluna é igual à linha, o tabuleiro mantém-se.
 swapRight(Row, Row, Board, NewBoard) :-
     NewBoard = Board.
 
+% Caso Base: A suma de Row e Col é igual a 12, o tabuleiro mantém-se.
 swapRight(Row, Col, Board, NewBoard) :-
     Row + Col =:= 12,
     NewBoard = Board.
 
+% Caso Recursivo: Muda 0 por 'p' até chegar ao fim do tabuleiro ou encontrar um 'b' ou 'w'.
 swapRight(Row, Col, Board, NewBoard) :-
     custom_nth1(Row, Board, RowList),
     ColRight is Col + 1,
     custom_nth1(ColRight, RowList, Elem),
     ((Elem = w ; Elem = b) ->
-        NewBoard = Board; % Stop the loop if Elem is 'w' or 'b'
+        NewBoard = Board; 
     (Elem = 0) ->  
         replace_swap(ColRight, RowList, p, NewRowRight),
         replace_swap(Row, Board, NewRowRight, TempBoard),
         swapRight(Row, ColRight, TempBoard, NewBoard);
     NewBoard = Board).
 
-/*---------------- Swap Diagonal1 (Up and Left)-------------------------*/
-% Swap 0 with p in the first diagonal direction (top-left to bottom-right)
+
+% swapDiagonal1(+Row, +Col, + Board, -NewBoard)
+% Muda 0 por 'p' no tabuleiro na direção da diagonal de cima e esquerda. 
+% Caso Base: A coluna é igual a 0, o tabuleiro mantém-se.
 swapDiagonal1(Row, 0, Board, NewBoard) :-
     NewBoard = Board.
 
+% Caso Recursivo: Muda 0 por 'p' até chegar ao fim do tabuleiro ou encontrar um 'b' ou 'w'.
 swapDiagonal1(Row, Col, Board, NewBoard) :-
     RowAbove is Row - 1,
     ColLeft is Col - 1,
     custom_nth1(RowAbove, Board, RowAboveList),
     custom_nth1(ColLeft, RowAboveList, Elem),
     ((Elem = w ; Elem = b) ->
-        NewBoard = Board; % Stop the loop if Elem is 'w' or 'b'
+        NewBoard = Board; 
     (Elem = 0) ->  
         replace_swap(ColLeft, RowAboveList, p, NewTopLeft),
         replace_swap(RowAbove, Board, NewTopLeft, TempBoard),
         swapDiagonal1(RowAbove, ColLeft, TempBoard, NewBoard);
     NewBoard = Board).
 
-/*---------------- Swap Diagonal2 (Low and Left)-------------------------*/
-% Swap 0 with p in the second diagonal direction (top-right to bottom-left)
+
+% swapDiagonal2(+Row, +Col, + Board, -NewBoard)
+% Muda 0 por 'p' no tabuleiro na direção da diagonal de baixo e esquerda. 
+% Caso Base: A coluna é igual a 0, o tabuleiro mantém-se.
 swapDiagonal2(Row, 0, Board, NewBoard) :-
     NewBoard = Board.
 
+% Caso Recursivo: Muda 0 por 'p' até chegar ao fim do tabuleiro ou encontrar um 'b' ou 'w'.
 swapDiagonal2(Row, Col, Board, NewBoard) :-
     RowBelow is Row + 1,
     ColLeft is Col - 1,
     custom_nth1(RowBelow, Board, RowBelowList),
     custom_nth1(ColLeft, RowBelowList, Elem),
     ((Elem = w ; Elem = b) ->
-        NewBoard = Board; % Stop the loop if Elem is 'w' or 'b'
+        NewBoard = Board; 
     (Elem = 0) ->  
         replace_swap(ColLeft, RowBelowList, p, NewBottomLeft),
         replace_swap(RowBelow, Board, NewBottomLeft, TempBoard),
         swapDiagonal2(RowBelow, ColLeft, TempBoard, NewBoard);
     NewBoard = Board).
 
-/*---------------- Swap Diagonal3 (Up and Right)-------------------------*/
+
+% swapDiagonal3(+Row, +Col, + Board, -NewBoard)
+% Muda 0 por 'p' no tabuleiro na direção da diagonal de cima e direita. 
+% Caso Base: A linha é igual à coluna, o tabuleiro mantém-se.
 swapDiagonal3(Col, Col, Board, NewBoard) :-
     NewBoard = Board.
 
+% Caso Base: A linha menos a coluna é igual 1, o tabuleiro mantém-se.
 swapDiagonal3(Row, Col, Board, NewBoard) :-
     Row - Col =:= 1,
     NewBoard = Board.
 
+% Caso Recursivo: Muda 0 por 'p' até chegar ao fim do tabuleiro ou encontrar um 'b' ou 'w'.
 swapDiagonal3(Row, Col, Board, NewBoard) :-
     RowAbove is Row - 1,
     ColRight is Col + 1, 
@@ -626,15 +659,20 @@ swapDiagonal3(Row, Col, Board, NewBoard) :-
         swapDiagonal3(RowAbove, ColRight, TempBoard, NewBoard);
     NewBoard = Board).
 
-/*---------------- Swap Diagonal4 (Low and Right)-------------------------*/
+
+% swapDiagonal4(+Row, +Col, + Board, -NewBoard)
+% Muda 0 por 'p' no tabuleiro na direção da diagonal de cima e direita. 
+% Caso Base: A linha mais a coluna é igual a 12, o tabuleiro mantém-se.
 swapDiagonal4(Row, Col, Board, NewBoard) :-
     Row + Col =:= 12,
     NewBoard = Board.
 
+% Caso Base: A linha mais a coluna é igual a 11, o tabuleiro mantém-se.
 swapDiagonal4(Row, Col, Board, NewBoard) :-
     Row + Col =:= 11,
     NewBoard = Board.
 
+% Caso Recursivo: Muda 0 por 'p' até chegar ao fim do tabuleiro ou encontrar um 'b' ou 'w'.
 swapDiagonal4(Row, Col, Board, NewBoard) :-
     RowBelow is Row + 1,
     ColRight is Col + 1,
@@ -648,8 +686,10 @@ swapDiagonal4(Row, Col, Board, NewBoard) :-
         swapDiagonal4(RowBelow, ColRight, TempBoard, NewBoard);
     NewBoard = Board).
 
-/*------------------ Replace ------------------*/
-% Replace an element at a specific index in a list
+% ---------------------------------------------------------------------------------------------------
+
+% replace_swap(+Index, + List, + Element, -NewList)
+% Substitui um elemento em um índice específico em uma lista.
 replace_swap(0, [_|Rest], Element, [Element|Rest]).
 
 replace_swap(Index, [X|Rest], Element, [X|NewRest]) :-
@@ -657,17 +697,18 @@ replace_swap(Index, [X|Rest], Element, [X|NewRest]) :-
     NewIndex is Index - 1,
     replace_swap(NewIndex, Rest, Element, NewRest).
     
-/* Function to replace the ps with zeros */
+% clean_playables(+Board, -NewBoard)
+% Limpa os p do tabuleiro de jogo.
 clean_playables([], []).
 clean_playables([Row|RestOfRows], [NewRow|NewRest]) :-
     replace_p_in_row(Row, NewRow),
     clean_playables(RestOfRows, NewRest).
 
+% replace_p_in_row(+Row, -NewRow)
+% Limpa os p de um linha do tabuleiro.
 replace_p_in_row([], []).
 replace_p_in_row([p|Rest], [0|NewRest]) :-
     replace_p_in_row(Rest, NewRest).
 replace_p_in_row([X|Rest], [X|NewRest]) :-
     X \= p,
     replace_p_in_row(Rest, NewRest).
-
-% ---------------------------------------------------------------------------------------------------
