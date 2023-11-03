@@ -23,7 +23,7 @@ If using Windows, we can click on the options `File` -> `Consult` -> select the 
 ## Description of the Game
 
 -  `Game Board:` Trike is played on an equilateral triangular hexagon-tessellated grid but since there isn't a good way to represent it in code language we had to opt out for a pyramid grid.
-- `Number of Players:` The game is played by 2 players who choose which colour they want to play with, black or white.
+- `Number of Players:` The game is played by 2 players. The first player start initially with the black pieces and the second player with the white ones. Colours can be switched after the pie rule.
 - `Game Components:` Black/white checkers are used to represent the two players (represented as `B` and `W`, respectively). The last checker (pinned checker) is used to determine the following possible moves, vertically, horizontally and diagonally until a piece or the end of the board is found.
 - `Game Objective:` The primary objective is to trap the pinned checker, and at the end of the game, accumulate as many points as possible.
 - `Movement:` Players take turns moving the pinned checker around the board. Passing is not allowed. The pawn can move any number of empty points in a straight line, in any direction, but cannot land on or jump over occupied points.
