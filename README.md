@@ -2,8 +2,9 @@
 
 **Group:** Trike_1
 
-- João Pedro Moreira Costa (up202108714@.up.pt)
-- Rafael Neves Teixeira (up202108831@up.pt)
+### Identification of the group elements and Contribution
+- João Pedro Moreira Costa (up202108714@.up.pt) - 50%
+- Rafael Neves Teixeira (up202108831@up.pt) - 50%
 
 ## Installation and Execution
 To play the game it is required to have installed at least the 4.8.0 version of SICStus Prolog and the folder `src` that contains the code for the game functioning.
