@@ -18,6 +18,7 @@ If using Windows, we can click on the options `File` -> `Consult` -> select the 
 ```prolog
 ?- play.
 ```
+---
 
 
 ## Description of the Game
@@ -31,6 +32,8 @@ If using Windows, we can click on the options `File` -> `Consult` -> select the 
 - `Winning:` The game ends when the pawn becomes trapped. The player with the most points wins.
 - `Scoring:` At the game's conclusion, each player scores one point for every checker of their own colour that is adjacent to or underneath the pawn.
 - `Pie Rule:` Before the game begins, the first player selects a colour and places a checker on any point of the board, with the pawn on top. At this point, the second player has a one-time opportunity to switch sides rather than make a regular move.
+
+---
 
 
 ## Game Logic
@@ -105,6 +108,7 @@ GameState = [b,
 ```
 ---
 
+
 ### Game State Visualization
 
 ##### Game Menu
@@ -152,6 +156,7 @@ Also, everytime someone plays, the board is updated to show every move that is p
 
 ---
 
+
 ### Move Validation and Execution
 The `move(+GameState, +Move, -NewMove, -NewGameState)` predicate takes the current game state, the move to take, the new move in case an incorrect one was given and the new game state resulting from that move. 
 
@@ -169,6 +174,7 @@ If it is valid, a piece of the corresponding player is placed on the board using
 For the bot, a predicate `choose_move(+GameState, +Level, -Move)` is called which objective is to pick a valid move using the algorithm according to the difficulty picked initially for the computer.
 
 --- 
+
 
 ### List of Valid Moves
 
@@ -198,6 +204,7 @@ replace_p_in_row([X|Rest], [X|NewRest]) :-
 
 --- 
 
+
 ### End of Game
 
 After the first play, the game is always being ran in a loop inside the predicate `gameplay(+GameState, +PlayerPos, FinalScore, Winner)` or `gameplay_bot(+GameState, +PlayerPos, +Level, -FinalScore, -Winner)` if bots are playing. Inside this predicate there is another predicate that is always checking if the game has ended after every move that was made, namelly `(game_over(GameState)`, that receives the board with all the possible moves:
@@ -224,6 +231,8 @@ value(Board, Row, Col, Value) :-
 ```
 This predicate calls the predicate `swap(+Row, +Col, +NewBoard, -ListOfMoves)` to determine and mark on the board the playable places that are possible from the coordinate (Row, Col) given and the predicate `count_p(+ListOfMoves, -Value)` to determine how many playable spaces exist from that coordinate.
 This predicate will be useful for the bot to determine the move with the best `Value` by iterating trough all the possible plays from a given position.
+
+---
 
 
 ### Computer Plays
