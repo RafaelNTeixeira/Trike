@@ -62,7 +62,7 @@ gameplay_bot([Player|Board], PlayerPos, Level, FinalScore, Winner) :-
 % choose_move(+GameState, +Level, -Move)
 % De acordo com o Level recebido (2-fácil ou 3-difícil), o algoritmo de jogabilidade do bot é escolhido.
 % Após percorrer o algoritmo, uma jogada é decidida.
-choose_move([Player|Board], Level, [PointX, PointY]) :-
+choose_move([_Player|Board], Level, [PointX, PointY]) :-
     ((Level = 3) ->
         count_p(Board, Count),
         ((Count = 1) -> get_p_coordinates(Board, [(PointX, PointY)]);
@@ -101,7 +101,7 @@ pie_rule_bot_vs_bot([Player|Board], PlayerPos, [CurPlayer|NewBoard]) :-
 
 % choose_random_zero(+Board, -Row, -Col)
 % Escolhe aleatoriamente uma célula do board.
-choose_random_zero(Board, Row, Col) :-
+choose_random_zero(Board, PRow, PCol) :-
     custom_flatten(Board, FlatBoard),
     findall(Row-Col, (nth1(Position, FlatBoard, 0), nth1(Row, Board, RowList), nth1(Col, RowList, 0), Position > 0), Positions),
     length(Positions, NumPositions),

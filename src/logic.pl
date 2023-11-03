@@ -64,19 +64,18 @@ gameplay([Player|Board], PlayerPos, FinalScore, Winner) :-
 
 % game_over(+GameState)
 % Verifica se num board existem jogadas jogáveis.
-game_over([Player|ListOfMoves]) :-
+game_over([_Player|ListOfMoves]) :-
     check_board(ListOfMoves).
 
 % valid_moves(+GameState, +PlayerPos, -ListOfMoves)
 % Determina e imprime as jogadas possíveis do momento no board.
 valid_moves([CurPlayer|Board], [PlayerX, PlayerY], ListOfMoves) :-
     swap(PlayerX, PlayerY, Board, ListOfMoves),
-    write('Valid Moves'), nl,
     display_game([CurPlayer|ListOfMoves]).
 
 % calculate_final_score(+GameState, +PlayerPos, -Score, -Winner)
 % identifica o vencedor e  calcula a pontuação total obtida por esse jogador.
-calculate_final_score([Player|Board], [PlayerX, PlayerY], Score, Winner) :-
+calculate_final_score([_Player|Board], [PlayerX, PlayerY], Score, Winner) :-
     count_around_end(Board, PlayerX, PlayerY, [0,0], ListOfScores),
     format('Final Position: (~d,~d)', [PlayerX, PlayerY]), nl,
     max_in_list(ListOfScores, Score),
@@ -271,13 +270,13 @@ count_around_end_under(Board, Row, Col, Start, ListOfScores) :-
 
 % max_position(+List, - MaxPosition)
 % Caso base: Se a lista contiver apenas um elemento, sua posição será 0.
-max_position([MaxValue], 0) :- !.
+max_position([_MaxValue], 0) :- !.
 
 % Caso recursivo:
 % - Encontre a posição máxima do final da lista.
 % - Se o início da lista for maior ou igual ao máximo do final, a posição máxima da lista é 0 (a posição atual).
 max_position([Head | Tail], MaxPosition) :-
-    max_position(Tail, TailMaxPosition),
+    max_position(Tail, _TailMaxPosition),
     find_max(Tail, TailMax),
     Head >= TailMax,
     MaxPosition is 0, !.
@@ -550,7 +549,7 @@ swapDown(Row, Col, Board, NewBoard) :-
 % swapLeft(+Row, +Col, + Board, -NewBoard)
 % Muda 0 por 'p' no tabuleiro na direção da esquerda. 
 % Caso Base: A coluna é igual a 0, o tabuleiro mantém-se.
-swapLeft(Row, 0, Board, NewBoard) :-
+swapLeft(_Row, 0, Board, NewBoard) :-
     NewBoard = Board.
 
 % Caso Recursivo: Muda 0 por 'p' até chegar ao fim do tabuleiro ou encontrar um 'b' ou 'w'.
@@ -595,7 +594,7 @@ swapRight(Row, Col, Board, NewBoard) :-
 % swapDiagonal1(+Row, +Col, + Board, -NewBoard)
 % Muda 0 por 'p' no tabuleiro na direção da diagonal de cima e esquerda. 
 % Caso Base: A coluna é igual a 0, o tabuleiro mantém-se.
-swapDiagonal1(Row, 0, Board, NewBoard) :-
+swapDiagonal1(_Row, 0, Board, NewBoard) :-
     NewBoard = Board.
 
 % Caso Recursivo: Muda 0 por 'p' até chegar ao fim do tabuleiro ou encontrar um 'b' ou 'w'.
@@ -616,7 +615,7 @@ swapDiagonal1(Row, Col, Board, NewBoard) :-
 % swapDiagonal2(+Row, +Col, + Board, -NewBoard)
 % Muda 0 por 'p' no tabuleiro na direção da diagonal de baixo e esquerda. 
 % Caso Base: A coluna é igual a 0, o tabuleiro mantém-se.
-swapDiagonal2(Row, 0, Board, NewBoard) :-
+swapDiagonal2(_Row, 0, Board, NewBoard) :-
     NewBoard = Board.
 
 % Caso Recursivo: Muda 0 por 'p' até chegar ao fim do tabuleiro ou encontrar um 'b' ou 'w'.
