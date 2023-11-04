@@ -1,5 +1,5 @@
 % menu/0
-% Mostra as opções de menu e lê a opção escolida.
+% Mostra as opções de menu e lê a opção escolhida.
 menu :-
     display_menu,
     read(Option), % ler valor inserido no menu
@@ -22,7 +22,7 @@ display_menu :-
     write('___________________________\n'),
     write('SELECT YOUR OPTION!\n').
 
-% run_mode(X)
+% run_mode(+Option)
 % Corre o modo escolhido pelo utilizador.
 run_mode(0) :-
     nl,
@@ -64,4 +64,8 @@ run_mode(5) :-
     write('Points are awarded for the number of checkers adjacently to checker that ended the game (checker that ended the game counts too).\n'),
     write('0. Main menu\n\n'),
     read(0),
+    menu.
+
+run_mode(_Option) :- 
+    write('\nThat option does not exist! Pick another one.\n\n'),
     menu.

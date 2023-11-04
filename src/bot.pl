@@ -6,7 +6,7 @@ random_choice_pie_rule_bot(Choice) :-
 
 % pie_rule_bot(+GameState, -PlayerPos, -NewGameState)
 % Aplicar a Pie Rule no modo Player Vs Bot
-% Um jogador escolhe aleatoriamente a jogada inicial e o bot ecolhe aleatoriamente se quer ou não trocar de cor.
+% Um jogador escolhe a jogada inicial e o bot escolhe aleatoriamente se quer ou não trocar de cor.
 pie_rule_bot([Player|Board], PlayerPos, [CurPlayer|NewBoard]) :-
     display_game_pie_rule(Board),
     write('\nPlayer 1\'s turn:'), nl, nl,
@@ -133,7 +133,7 @@ gameplay_bot_vs_bot([Player|Board], PlayerPos, FinalScore, Winner) :-
 
 
 % move_bot(+GameState, +Move, -NewGameState)
-% Aplica a jogada do bot no board e troca de jogador após essa jogada
+% Aplica a jogada do bot no board e troca de jogador após essa jogada.
 move_bot([Player|Board], [PointX, PointY], [NewPlayer|NewBoard]) :-
     replace(Board, PointX, PointY, Player, TempBoard),
     clean_playables(TempBoard, NewBoard),
@@ -155,7 +155,7 @@ custom_flatten([Head|Rest], [Head|FlatRest]) :-
 
 
 % choose_random_p(+Board, -PRow, -PCol)
-% Predicado para escolher uma posição aleatória com um `p` (espaço jogável) do board e retornar as suas coordenadas
+% Predicado para escolher uma posição aleatória com um `p` (espaço jogável) do board e retornar as suas coordenadas.
 choose_random_p(Board, PRow, PCol) :-
     custom_flatten(Board, FlatBoard),
     findall(Row-Col, (nth1(Position, FlatBoard, p), nth1(Row, Board, RowList), nth1(Col, RowList, p), Position > 0), Positions),
@@ -188,7 +188,7 @@ get_row_p_coordinates([_|Rest], ColumnIndex, RowIndex, Acc, PList) :-
 
 
 % count_p(+Board, -Count)
-% Conta todos os p de um board.
+% Conta todos os `p` de um board.
 count_p([], 0). 
 
 count_p([Row | RestBoard], Count) :-
@@ -207,28 +207,28 @@ count_p_in_row([_ | Rest], Count) :-
 
 
 % value(+Board, +Row, +Col, -Value)
-% Determina um valor de uma jogada ao contar quantas jogadas disponivéis ficam após jogar.
+% Determina um valor de uma jogada ao contar quantas jogadas disponíveis ficam após jogar.
 value(Board, Row, Col, Value) :-
     clean_playables(Board, NewBoard),
     swap(Row, Col, NewBoard, ListOfMoves),
     count_p(ListOfMoves, Value).
 
 % process_p(+Board, +PList, -Values)
-% Chama o predicado *value* para todas as jogadas possivéis. 
+% Percorre as coordenadas numa lista que representam as jogadas possíveis e para cada uma dessas coordenadas, é chamado o predicado `value` para determinar o valor dessa jogada.
 process_p(_, [], []).
 process_p(Board, [(Row,Col)|Res], [Value|Values]) :-
     value(Board, Row, Col, Value),
     process_p(Board, Res, Values).
 
 % max_in_list1(+List, -Max)
-% O predicado diz qual é o maior valor da lista.
+% Determina quel é o maior valor da lista.
 max_in_list1([X], X).
 max_in_list1([X|Xs], Max) :-
     max_in_list1(Xs, RestMax),
     Max is max(X, RestMax).
 
 % max_position1(+List, -Pos)
-% O predicado diz qual é a posição do maior valor da lista.
+% Determina a posição do maior valor da lista.
 max_position1(List, Pos) :-
     max_in_list1(List, Max),         
     nth1(Pos, List, Max).
