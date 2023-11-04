@@ -153,13 +153,15 @@ By picking the option `0` the following text is displayed:
 #### Board
 Once we start a game, the board is displayed like this:
 
-![Board](/docs/board.png)
+![image](https://github.com/RafaelNTeixeira/Trike/assets/93678348/74a859f2-5d8d-4e06-9901-ab70cabe967b)
+
 
 To display it we use the predicate `display_game(+GameState)`, printing the board and whose turn it is to play.
 
 Also, everytime someone plays, the board is updated to show every move that is possible to take using the predicate `valid_moves(+GameState, +PlayerPos, -ListOfMoves)`:
 
-![BoardPlayables](/docs/boardPlayables.png)
+![image](https://github.com/RafaelNTeixeira/Trike/assets/93678348/d456cd62-22f8-4360-8682-5dd7e07aae15)
+
 
 ---
 
