@@ -32,7 +32,13 @@ If using Windows, we can click on the options `File` -> `Consult` -> select the 
 - `Game Progression:` When a player moves the piece, they must first place a checker of their own colour onto the destination point and then move the pawn on top of it.
 - `Winning:` The game ends when the pawn becomes trapped. The player with the most points wins.
 - `Scoring:` At the game's conclusion, each player scores one point for every checker of their own colour that is adjacent to or underneath the pawn.
-- `Pie Rule:` Before the game begins, the first player selects a colour and places a checker on any point of the board, with the pawn on top. At this point, the second player has a one-time opportunity to switch sides rather than make a regular move.
+- `Pie Rule:` Before the game begins, the first player selects a colour and places a checker on any point of the board. At this point, the second player has a one-time opportunity to switch sides rather than make a regular move.
+
+### Sources
+
+> **Game Website and Rules:** (https://boardgamegeek.com/boardgame/307379/trike)
+
+> **Online Gameplay:** (https://pt.boardgamearena.com/gamepanel?game=trike)
 
 ---
 
@@ -112,7 +118,7 @@ GameState = [b,
 
 ### Game State Visualization
 
-##### Game Menu
+#### Game Menu
 The game menu is displayed like this:
 ```prolog
         _________  ______ ______ 
@@ -129,7 +135,7 @@ The game menu is displayed like this:
     ___________________________
     SELECT YOUR OPTION!
 ```
-An option is picked by typing a number followed by a `` and pressing the `Enter` key. 
+An option is picked by typing a number followed by a `.` and pressing the `Enter` key. 
 
 The first 4 options correspond to dynamic stages of the program and the last one to a static page.
 
@@ -140,11 +146,11 @@ By picking the option `0` the following text is displayed:
             / / / , _// // ,< / _/   
            /_/ /_/|_/___/_/|_/___/   
 
-    Thank you for playing. Hope to see you soon
+    Thank you for playing. Hope to see you soon!
 
 ```
 
-##### Board
+#### Board
 Once we start a game, the board is displayed like this:
 
 ![Board](/docs/board.png)
@@ -179,7 +185,7 @@ For the bot, a predicate `choose_move(+GameState, +Level, -Move)` is called whic
 
 ### List of Valid Moves
 
-The `valid_moves(+GameState, +PlayerPos, -ListOfMoves)` predicate takes 3 arguments, the current game state, the current player position and a list with all the possible moves that is returned. That list represents the board and is printed showing the player where he can play:
+The `valid_moves(+GameState, +PlayerPos, -ListOfMoves)` predicate takes 3 arguments, the current game state, the current player position and a list with all the possible moves that is returned. That list represents the board and is printed showing the player where he can play.
 This predicate calls the `swap(+PlayerX, +PlayerY, +Board, -ListOfMoves)` predicate which function is to replace on the board all the empty spaces that could represent a valid move with a `p`. To achieve this, this predicate travels the board vertically, horizontally and diagonally until it reaches the end of the board or finds a `b` or `w`, while replacing every `0` space with a `p`.
 ```prolog
 valid_moves([CurPlayer|Board], [PlayerX, PlayerY], ListOfMoves) :-
@@ -208,7 +214,7 @@ replace_p_in_row([X|Rest], [X|NewRest]) :-
 
 ### End of Game
 
-After the first play, the game is always being ran in a loop inside the predicate `gameplay(+GameState, +PlayerPos, FinalScore, Winner)` or `gameplay_bot(+GameState, +PlayerPos, +Level, -FinalScore, -Winner)` if bots are playing. Inside this predicate there is another predicate that is always checking if the game has ended after every move that was made, namelly `(game_over(GameState)`, that receives the board with all the possible moves:
+After the first play, the game is always being ran in a loop inside the predicate `gameplay(+GameState, +PlayerPos, FinalScore, Winner)` (Player Vs Player) or `gameplay_bot(+GameState, +PlayerPos, +Level, -FinalScore, -Winner)` (Player Vs Bot) or `gameplay_bot_vs_bot(+GameState, +PlayerPos, -FinalScore, -Winner)` (Bot Vs Bot). Inside these predicates there is another predicate that is always checking if the game has ended after every move that was made, namelly `(game_over(GameState)`, that receives the board with all the possible moves:
 
 ```prolog
 game_over([Player|ListOfMoves]) :-
@@ -217,6 +223,11 @@ game_over([Player|ListOfMoves]) :-
 - `check_board(ListOfMoves)`: check if there is a 'p' in the board.
 
  This predicate ends the game if there are no cells marked with `p` (playable spaces) on the board and if this predicate checks for true (there are playable spaces), it means that the game hasn't ended and so the following play is proceeded, but if it checks for false (no playable spaces), the predicate `calculate_final_score(+GameState], +PlayerPos, -FinalScore, -Winner)` is called, identifying the player who won and retrieving the final score that corresponds the number of pieces belonging to that player which are below or around the last piece played.
+
+When the game finishes, this is an example of what is displayed:
+
+![image](https://github.com/RafaelNTeixeira/Trike/assets/93678348/ea032ad2-26c8-4e0d-a3b8-8a6349101100)
+
 
 ---
 
@@ -241,15 +252,22 @@ This predicate will be useful for the bot to determine the move with the best `V
 All the bots resort to the predicate `choose_move(+GameState, +Level, -Move)` to pick a valid move according to the difficulty (Level) picked at the game menu:
 
 ```prolog
-choose_move([Player|Board], Level, [PointX, PointY]) :-
-    ((Level = 2) -> choose_random_p(Board, PointX, PointY);
-        hard(Board, PointX, PointY)
+choose_move([_Player|Board], Level, [PointX, PointY]) :-
+    ((Level = 3) ->
+        count_p(Board, Count),
+        ((Count = 1) -> get_p_coordinates(Board, [(PointX, PointY)]);
+            hard(Board, PointX, PointY)
+        )
+        ;
+        count_p(Board, Count),
+        ((Count = 1) -> get_p_coordinates(Board, [(PointX, PointY)]);
+            choose_random_p(Board, PointX, PointY)
+        )
     ).
 ```
-If `Level` corresponds to `2`, the `choose_random_p(+Board, -PointX, -PointY)` predicate is called, picking a playable space, marked with `p`, randomly.
-Oherwise, the `hard(+Board, -PointX, -PointY)` predicate is called to run the algorithm with hardest difficulty available on the game.
+If `Level` corresponds to `3`, the `hard(+Board, -PointX, -PointY)` predicate is called. Oherwise, the `choose_random_p(+Board, -PointX, -PointY)` predicate is called to run the algorithm with easiest difficulty available on the game, which strategy is to pick a playable space, marked with `p`, randomly.
 
-To make up a good strategy for an algorithm for the hard difficulty of the bot, after playing and studying the game Trike a bit, we realised that one of best possible moves to make to play on the cell with the most available spaces possible. This way, the play takes more of a defensive aprocah since it always places a piece where the opponent isn't trying to end the game. 
+To make up a good strategy for an algorithm for the hard difficulty of the bot, after playing and studying the game Trike a bit, we realised that one of best possible moves to make to play on the cell with the most available spaces possible. This way, the play takes more of a defensive aproach since it always places a piece where the opponent isn't trying to end the game. 
 With that, we decided to implement our hardest algorithm around that strategy, so the predicate `hard(+Board, -PointX, -PointY)` does exactly what was mentioned before by picking the move with the best Value:
 
 ```prolog
@@ -271,7 +289,7 @@ value(Board, Row, Col, Value) :-
 ```
 
 - `get_p_coordinates(+Board, -PList)`: checks all the cells of the board and returns all the playable ones (marked with `p`)
-- `process_p(+Board, +PList, -Values)`: process each element in the list and store the values in a new list. This predicate iterates trough all the playable spaces and calls the predicate `value(+Board, +Row, +Col, -Value)` to calculate the number of playable places if a piece is placed on that cell and stores that number on the variable Values. 
+- `process_p(+Board, +PList, -Values)`: process each element in the list and store the values in a new list. This predicate iterates through all the playable spaces, invoking the value(+Board, +Row, +Col, -Value) predicate to calculate the number of playable positions if a piece is placed on any of these available spaces and stores this count in the `Values` variable
 - `max_position1(+Values, -Index)`: find the position of the maximum value on the list, this is, the play that will have the most playable spaces
 - `custom_nth1(+Index, +PList, -(Row, Col)`: retrieve the position of the element with the maximum score
 
@@ -299,9 +317,3 @@ If we had more time, we would like to have:
 
 ---
 
-
-### Sources
-
-> **Game Website and Rules:** (https://boardgamegeek.com/boardgame/307379/trike)
-
-> **Online Gameplay:** (https://pt.boardgamearena.com/gamepanel?game=trike)
